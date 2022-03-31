@@ -45,7 +45,13 @@ function activate(context) {
 		const scriptPath = path.join(settings.customScriptsFolderLocation, selectedScript.label);
 		const script = fs.readFileSync(scriptPath, "utf8");
 		eval(script);
-		let inputObj = { text: textToEdit, selection: selectedText, fullText: wholeDocumentText };
+		let inputObj = { 
+			text: textToEdit, 
+			selection: selectedText, 
+			fullText: wholeDocumentText,
+			postInfo: vscode.window.showInformationMessage,
+			postError: vscode.window.showErrorMessage
+		};
 		main(inputObj);
 
 		activeEditor.edit((editBuilder) => {
@@ -57,8 +63,6 @@ function activate(context) {
 			editBuilder.replace(activeEditor.selection, inputObj.text);
 		  }
 		});
-
-		vscode.window.showInformationMessage(selectedScript.label);
 	  });
   });
 
