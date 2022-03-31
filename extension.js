@@ -6,15 +6,25 @@ const path = require("path");
 let quickPickScriptList = [];
 
 function addScriptsInPath(path) {
-    let scripts = fs.readdirSync(path);
-    for (let i = 0; i < scripts.length; i++) {
-      let item = scripts[i];
-      quickPickScriptList.push({
-        label: item,
-        description: item,
-		scriptPath: (path + "/" + item).replace(/\\/g, "/"),
-      });
+  let scripts = fs.readdirSync(path);
+  for (let i = 0; i < scripts.length; i++) {
+    const item = scripts[i];
+    if (item.endsWith(".js")) {
+      const scriptPath = (path + "/" + item).replace(/\\/g, "/");
+      const scriptContent = fs.readFileSync(scriptPath, "utf8");
+      try {
+        const declaration = JSON.parse(scriptContent.substring(scriptContent.indexOf("{"), scriptContent.indexOf("}") + 1).replace(/,\s+}$/, "}"));
+        quickPickScriptList.push({
+          label: declaration.name,
+          description: declaration.description,
+          detail: declaration.tags,
+          scriptPath: scriptPath,
+        });
+      } catch (e) {
+        console.log(`Voop: Couldn't load script ${item}`, e);
+      }
     }
+  }
 }
 
 /**
@@ -24,16 +34,19 @@ function activate(context) {
   addScriptsInPath(__dirname + "/Boop/Boop/Boop/Scripts");
   const settings = vscode.workspace.getConfiguration("voop");
   if (settings.customScriptsFolderLocation) {
-	addScriptsInPath(settings.customScriptsFolderLocation);
+    addScriptsInPath(settings.customScriptsFolderLocation);
   }
   //settings.customScriptsFolderLocation => default === null
 
   let disposable = vscode.commands.registerCommand("voop", function () {
-    vscode.window.showQuickPick(quickPickScriptList).then((selectedScript) => {
+    const quickPick = vscode.window.createQuickPick();
+    quickPick.items = quickPickScriptList;
+    quickPick.onDidChangeSelection((selectedScripts) => {
       // the user canceled the selection
-      if (!selectedScript) {
+      if (!selectedScripts || selectedScripts.length === 0) {
         return;
       }
+	  const selectedScript = selectedScripts[0];
 
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) {
@@ -47,6 +60,7 @@ function activate(context) {
       let textToEdit = !selectedText || selectedText.length === 0 ? wholeDocumentText : selectedText;
 
       const script = fs.readFileSync(selectedScript.scriptPath, "utf8");
+      let insertion = "";
       eval(script);
       let inputObj = {
         text: textToEdit,
@@ -54,11 +68,20 @@ function activate(context) {
         fullText: wholeDocumentText,
         postInfo: vscode.window.showInformationMessage,
         postError: vscode.window.showErrorMessage,
+        insert: (text) => {
+          insertion += text;
+        },
       };
       main(inputObj);
 
       activeEditor.edit((editBuilder) => {
-        if (!selectedText || selectedText.length === 0) {
+        if (insertion.length !== 0) {
+          if (selectedText && selectedText.length > 0) {
+            editBuilder.replace(activeEditor.selection, insertion);
+          } else {
+            editBuilder.insert(activeEditor.selection.start, insertion);
+          }
+        } else if (!selectedText || selectedText.length === 0) {
           //no selection, replace whole document
           editBuilder.replace(new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end), inputObj.text);
         } else {
@@ -66,7 +89,9 @@ function activate(context) {
           editBuilder.replace(activeEditor.selection, inputObj.text);
         }
       });
+	  quickPick.hide();
     });
+	quickPick.show();
   });
 
   context.subscriptions.push(disposable);
