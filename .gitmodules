@@ -1,0 +1,3 @@
+[submodule "Boop"]
+	path = Boop
+	url = https://github.com/IvanMathy/Boop
