@@ -12,14 +12,15 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:voop",
+    "onCommand:voop.activate",
+	"onCommand:voop.reloadScripts",
     "onStartupFinished"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "voop",
+        "command": "voop.activate",
         "title": "Voop"
       },
       {

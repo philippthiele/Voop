@@ -42,7 +42,7 @@ function loadScripts() {
  */
 function activate(context) {
   loadScripts();
-  let disposable = vscode.commands.registerCommand("voop", function () {
+  let disposable = vscode.commands.registerCommand("voop.activate", function () {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = quickPickScriptList;
     quickPick.matchOnDescription = true;
