@@ -19,6 +19,10 @@
 			{
 				"command": "voop",
 				"title": "Voop"
+			},
+			{
+				"command": "voop.reloadScripts",
+				"title": "Voop: Reload Scripts"
 			}
 		],
 		"configuration": {

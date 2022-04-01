@@ -27,17 +27,20 @@ function addScriptsInPath(path) {
   }
 }
 
-/**
- * @param {vscode.ExtensionContext} context
- */
-function activate(context) {
+function loadScripts() {
+  quickPickScriptList = [];
   addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
   const settings = vscode.workspace.getConfiguration("voop");
   if (settings.customScriptsFolderLocation) {
     addScriptsInPath(settings.customScriptsFolderLocation);
   }
-  //settings.customScriptsFolderLocation => default === null
+}
 
+/**
+ * @param {vscode.ExtensionContext} context
+ */
+function activate(context) {
+  loadScripts();
   let disposable = vscode.commands.registerCommand("voop", function () {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = quickPickScriptList;
@@ -96,7 +99,13 @@ function activate(context) {
 	quickPick.show();
   });
 
+  let disposable2 = vscode.commands.registerCommand("voop.reloadScripts", function () {
+    loadScripts();
+    vscode.window.showInformationMessage("Voop Scripts Reloaded");
+  });
+
   context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable2);
 }
 
 function deactivate() {}
