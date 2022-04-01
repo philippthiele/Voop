@@ -30,7 +30,7 @@
     ],
     "keybindings": [
       {
-        "command": "voop",
+        "command": "voop.activate",
         "key": "Ctrl+Alt+V"
       }
     ],
