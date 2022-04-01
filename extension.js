@@ -86,12 +86,14 @@ function activate(context) {
           } else {
             editBuilder.insert(activeEditor.selection.start, insertion);
           }
-        } else if (!selectedText || selectedText.length === 0) {
-          //no selection, replace whole document
-          editBuilder.replace(new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end), inputObj.text);
+        } else if (wholeDocumentText !== inputObj.fullText || !selectedText || selectedText.length === 0) {
+          //fullText modified or no selection, replace whole document
+          const textForReplacement = inputObj.text !== textToEdit ? inputObj.text : inputObj.fullText;
+          editBuilder.replace(new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end), textForReplacement);
         } else {
           //text is selected, replace selection
-          editBuilder.replace(activeEditor.selection, inputObj.text);
+          const textForReplacement = inputObj.text !== textToEdit ? inputObj.text : inputObj.selection;
+          editBuilder.replace(activeEditor.selection, textForReplacement);
         }
       });
 	  quickPick.hide();
