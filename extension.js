@@ -51,7 +51,7 @@ function activate(context) {
       if (!selectedScripts || selectedScripts.length === 0) {
         return;
       }
-	  const selectedScript = selectedScripts[0];
+      const selectedScript = selectedScripts[0];
 
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) {
@@ -94,9 +94,9 @@ function activate(context) {
           editBuilder.replace(activeEditor.selection, inputObj.text);
         }
       });
-	  quickPick.hide();
+      quickPick.hide();
     });
-	quickPick.show();
+    quickPick.show();
   });
 
   let disposable2 = vscode.commands.registerCommand("voop.reloadScripts", function () {
