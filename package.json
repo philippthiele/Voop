@@ -3,6 +3,8 @@
   "displayName": "Voop",
   "description": "Voop is a way to execute Boop scripts directly in VSCode. Boop is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.",
   "version": "0.0.1",
+  "repository": "https://github.com/philippthiele/Voop",
+  "publisher": "PhilippT",
   "engines": {
     "vscode": "^1.66.0"
   },
