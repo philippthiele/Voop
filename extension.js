@@ -3,6 +3,7 @@
 const vscode = require("vscode");
 const fs = require("fs");
 const path = require("path");
+require('module-alias/register');
 let quickPickScriptList = [];
 
 function addScriptsInPath(path) {
