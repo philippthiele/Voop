@@ -31,7 +31,7 @@ function addScriptsInPath(path) {
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
-  addScriptsInPath(__dirname + "/Boop/Boop/Boop/Scripts");
+  addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
   const settings = vscode.workspace.getConfiguration("voop");
   if (settings.customScriptsFolderLocation) {
     addScriptsInPath(settings.customScriptsFolderLocation);
@@ -41,6 +41,8 @@ function activate(context) {
   let disposable = vscode.commands.registerCommand("voop", function () {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = quickPickScriptList;
+    quickPick.matchOnDescription = true;
+    quickPick.matchOnDetail = true;
     quickPick.onDidChangeSelection((selectedScripts) => {
       // the user canceled the selection
       if (!selectedScripts || selectedScripts.length === 0) {
