@@ -31,6 +31,7 @@ function addScriptsInPath(path) {
 function loadScripts() {
   quickPickScriptList = [];
   addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
+  addScriptsInPath(__dirname + "/scripts");
   const settings = vscode.workspace.getConfiguration("voop");
   if (settings.customScriptsFolderLocation) {
     addScriptsInPath(settings.customScriptsFolderLocation);
