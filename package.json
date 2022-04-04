@@ -2,7 +2,7 @@
   "name": "voop",
   "displayName": "Voop",
   "description": "Convert, En- & Decode, Format, Tranform, Hash any (selected) text & add own simple JS scripts to extend with any functionality you need",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "icon": "images/logo.png",
   "repository": "https://github.com/philippthiele/Voop",
   "publisher": "PhilippT",
