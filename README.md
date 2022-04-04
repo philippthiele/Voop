@@ -1,9 +1,5 @@
 # Voop
 Convert, En- & Decode, Format, Tranform, Hash any (selected) text & add own simple JS scripts to extend with any functionality you need
-
-## What is it exactly?
-Voop is a way to execute Boop scripts directly in VSCode. It was created based on the idea and the scripts of [Boop](https://github.com/IvanMathy/Boop), which is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.
-
 ## Featured Functionality List
 These functions are usually executed on the whole document or on the selection if some text is selected.
 
@@ -20,6 +16,9 @@ These functions are usually executed on the whole document or on the selection i
 
 
 ![Demo](images/demo.gif)
+
+## Origins of Voop
+Voop is a way to execute Boop scripts directly in VSCode. It was created based on the idea and the scripts of [Boop](https://github.com/IvanMathy/Boop), which is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.
 
 ## How to get Voop
 

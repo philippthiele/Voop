@@ -1,8 +1,8 @@
 {
   "name": "voop",
   "displayName": "Voop",
-  "description": "Voop is a way to execute Boop scripts directly in VSCode. Boop is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.",
-  "version": "0.0.7",
+  "description": "Convert, En- & Decode, Format, Tranform, Hash any (selected) text & add own simple JS scripts to extend with any functionality you need",
+  "version": "0.0.8",
   "icon": "images/logo.png",
   "repository": "https://github.com/philippthiele/Voop",
   "publisher": "PhilippT",
