@@ -10,11 +10,19 @@
     "vscode": "^1.66.0"
   },
   "categories": [
+    "Formatters",
     "Other"
+  ],
+  "keywords": [
+    "transform", 
+    "convert", 
+    "hash",
+    "decode",
+    "format"
   ],
   "activationEvents": [
     "onCommand:voop.activate",
-	"onCommand:voop.reloadScripts",
+    "onCommand:voop.reloadScripts",
     "onStartupFinished"
   ],
   "main": "./extension.js",
@@ -69,6 +77,6 @@
     "module-alias": "^2.2.2"
   },
   "_moduleAliases": {
-	"@boop": "Boop/Boop/Boop/scripts/lib"
+    "@boop": "Boop/Boop/Boop/scripts/lib"
   }
 }
