@@ -22,7 +22,7 @@ Voop is a way to execute Boop scripts directly in VSCode. It was created based o
 
 ## How to get Voop
 
-You can get Voop from the Visual Studio Code Marketplace.
+You can get Voop from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=PhilippT.voop).
 
 ## How to activate Voop in VSCode
 
