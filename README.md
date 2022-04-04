@@ -23,7 +23,7 @@ These functions are usually executed on the whole document or on the selection i
 
 ## How to get Voop
 
-You can get Voop from the Visual Studio Code Marketplace.
+You can get Voop from the [Visual Studio Code Marketplace](https://marketplace.visualstudio.com/items?itemName=PhilippT.voop).
 
 ## How to activate Voop in VSCode
 
