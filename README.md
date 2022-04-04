@@ -1,6 +1,20 @@
 # Voop
 Voop is a way to execute Boop scripts directly in VSCode. [Boop](https://github.com/IvanMathy/Boop) is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.
 
+## Featured Functionality List
+These functions are usually executed on the whole document or on the selection if some text is selected.
+
+- (Un-)Escape Text (add/remove backslashes before " & ')
+- (En-) & Decode Base64, JWT, HTML Entities, URLs
+- Convert JSON <-> YAML, CSV <-> JSON, HEX -> RGB, Hex <-> Dec <-> Binary, Date <-> Timestamp <-> UTC Timestamp
+- Hash: MD5, SHA1, SHA256, SHA512
+- Format & Minify: JSON, XML, CSS, SQL
+- Count: Lines, Words, Characters
+- Transform text to upper/lower, camel, kebab, snake, start, sponge case, trim
+- Sort / Shuffle lines
+- and more ...
+
+
 ![Demo](images/demo.gif)
 
 ## How to get Voop
