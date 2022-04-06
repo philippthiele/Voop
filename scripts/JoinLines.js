@@ -1,16 +1,18 @@
 /**
 	{
-		"api":1,
-		"name":"Join Lines",
-		"description":"Joins all lines with given delimiter.",
-		"author":"riesentoaster + philippthiele",
-		"icon":"collapse",
-		"tags":"join",
-		"userInput":true,
-		"userInputPlaceHolder":"specify separator"
+        "api":1,
+        "name":"Join lines",
+        "description":"Joins all lines with given delimiter.",
+        "author":"Dennis + philippthiele",
+        "icon":"collapse",
+        "tags":"strip,remove,collapse,join",
+        "userInput":true,
+        "userInputPlaceHolder":"specify separator"
 	}
 **/
 
 function main(input) {
-	input.text = input.text.replace(/\n/g, input.userInput);
+    let split = input.text.split(/\r\n|\r|\n/);
+    input.postInfo(`${split.length} lines joined`);
+    input.fullText = split.join(input.userInput);
 }
