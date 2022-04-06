@@ -15,14 +15,20 @@ function addScriptsInPath(path) {
       const scriptContent = fs.readFileSync(scriptPath, "utf8");
       try {
         const declaration = JSON.parse(scriptContent.substring(scriptContent.indexOf("{"), scriptContent.indexOf("}") + 1).replace(/,\s+}$/, "}"));
-        quickPickScriptList.push({
-          label: declaration.name,
-          description: declaration.description,
-          detail: declaration.tags,
-          scriptPath: scriptPath,
-        });
+        if(!quickPickScriptList.find(s => s.label === declaration.name)){
+          quickPickScriptList.push({
+            label: `${declaration.name}${declaration.userInput ? ' 👤' : ''}`,
+            description: declaration.description,
+            detail: declaration.tags,
+            scriptPath: scriptPath,
+            userInput: declaration.userInput,
+            userInputPlaceHolder: declaration.userInputPlaceHolder
+          });
+        } else {
+          console.warn(`Voop: Script with name '${declaration.name}' exists twice, not adding second instance.`)
+        }
       } catch (e) {
-        console.log(`Voop: Couldn't load script ${item}`, e);
+        console.error(`Voop: Couldn't load script ${item}`, e);
       }
     }
   }
@@ -48,7 +54,7 @@ function activate(context) {
     quickPick.items = quickPickScriptList;
     quickPick.matchOnDescription = true;
     quickPick.matchOnDetail = true;
-    quickPick.onDidChangeSelection((selectedScripts) => {
+    quickPick.onDidChangeSelection(async (selectedScripts) => {
       // the user canceled the selection
       if (!selectedScripts || selectedScripts.length === 0) {
         return;
@@ -66,6 +72,12 @@ function activate(context) {
 
       let textToEdit = !selectedText || selectedText.length === 0 ? wholeDocumentText : selectedText;
 
+      //additional input needed?
+      let userInput = '';
+      if(selectedScript.userInput){
+        userInput = await vscode.window.showInputBox({placeHolder: selectedScript.userInputPlaceHolder ? selectedScript.userInputPlaceHolder : ''});
+      }
+
       const script = fs.readFileSync(selectedScript.scriptPath, "utf8");
       let insertion = "";
       eval(script);
@@ -73,6 +85,7 @@ function activate(context) {
         text: textToEdit,
         selection: selectedText,
         fullText: wholeDocumentText,
+        userInput: userInput,
         postInfo: vscode.window.showInformationMessage,
         postError: vscode.window.showErrorMessage,
         insert: (text) => {
