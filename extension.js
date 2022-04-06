@@ -77,6 +77,10 @@ function activate(context) {
       if(selectedScript.userInput){
         userInput = await vscode.window.showInputBox({placeHolder: selectedScript.userInputPlaceHolder ? selectedScript.userInputPlaceHolder : ''});
       }
+      if(userInput === undefined){
+        //userInput was canceled, stop executing script
+        return;
+      }
 
       const script = fs.readFileSync(selectedScript.scriptPath, "utf8");
       let insertion = "";
