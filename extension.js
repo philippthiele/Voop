@@ -25,7 +25,7 @@ function addScriptsInPath(path) {
             userInputPlaceHolder: declaration.userInputPlaceHolder
           });
         } else {
-          console.warn(`Voop: Script with name '${declaration.name}' exists twice, not adding second instance.`)
+          console.debug(`Voop: Script with name '${declaration.name}' exists twice, not adding second instance.`)
         }
       } catch (e) {
         console.error(`Voop: Couldn't load script ${item}`, e);
@@ -36,8 +36,8 @@ function addScriptsInPath(path) {
 
 function loadScripts() {
   quickPickScriptList = [];
-  addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
   addScriptsInPath(__dirname + "/scripts");
+  addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
   const settings = vscode.workspace.getConfiguration("voop");
   if (settings.customScriptsFolderLocation) {
     addScriptsInPath(settings.customScriptsFolderLocation);

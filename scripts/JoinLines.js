@@ -14,5 +14,5 @@
 function main(input) {
     let split = input.text.split(/\r\n|\r|\n/);
     input.postInfo(`${split.length} lines joined`);
-    input.fullText = split.join(input.userInput);
+    input.text = split.join(input.userInput);
 }
