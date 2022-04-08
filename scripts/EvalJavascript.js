@@ -10,7 +10,7 @@
  **/
 
 function main(input) {
-    const script = input.text.replace(/(\r\n|\r|\n)(\r\n|\r|\n)\/\/ Log output:[\s\S]*$/, '');
+    const script = input.text.replace(/(\r\n|\r|\n)(\r\n|\r|\n)\/\/ Log output:[\s\S]*$/, '').replace(/(\r\n|\r|\n)(\r\n|\r|\n)\/\/ Return value:[\s\S]*$/, '');
 
     let output = '';
     let logs = '';
@@ -33,9 +33,9 @@ function main(input) {
             output = JSON.stringify(output, null, 2);
         }
     } catch (e) {
-        input.postError(e.toString());
+        logs += `Execution Error:\n${e.toString()}`;
     }
 
-    input.text =  `${script}\n\n// Log output:\n\n${logs}${output !== undefined && output !== '' ? `\n\n// Return value:\n\n${output}` : ''}`;
+    input.text =  `${script}${logs !== '' ? `\n\n// Log output:\n\n${logs}` : ''}${output !== undefined && output !== '' ? `\n\n// Return value:\n\n${output}` : ''}`;
 }
     
