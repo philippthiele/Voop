@@ -11,7 +11,7 @@
 
 function main(input) {
     try{
-        input.text = eval(input.text);
+        input.text = eval(input.text)+"";
     } catch (e) {
         input.postError(e.toString());
     }
