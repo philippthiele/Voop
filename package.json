@@ -50,6 +50,16 @@
           "type": "string",
           "default": "",
           "description": "Specifies the folder path containing custom scripts that should be additionally loaded."
+        },
+        "voop.githubCustomScriptRepository": {
+          "type": "string",
+          "default": "",
+          "description": "Specifies a repositories GitHub URL containing custom scripts that should be additionally loaded."
+        },
+        "voop.githubPersonalAccessToken": {
+          "type": "string",
+          "default": "",
+          "description": "If your scripts are in a private repo, you need to add a PAT for download. You can generate it in your GitHub profile -> Developer settings, repo access is sufficient."
         }
       }
     }
@@ -71,7 +81,8 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "module-alias": "^2.2.2"
+    "module-alias": "^2.2.2",
+    "yauzl": "^2.10.0"
   },
   "_moduleAliases": {
     "@boop": "Boop/Boop/Boop/scripts/lib"
