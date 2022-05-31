@@ -39,7 +39,7 @@ function loadScripts() {
   addScriptsInPath(__dirname + "/scripts");
   addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
   const settings = vscode.workspace.getConfiguration("voop");
-  if (settings.customScriptsFolderLocation) {
+  if (settings.customScriptsFolderLocation && settings.customScriptsFolderLocation.trim().length > 0) {
     addScriptsInPath(settings.customScriptsFolderLocation);
   }
 }

@@ -14,8 +14,8 @@
     "Other"
   ],
   "keywords": [
-    "transform", 
-    "convert", 
+    "transform",
+    "convert",
     "hash",
     "decode",
     "format"
@@ -47,12 +47,9 @@
       "title": "Voop",
       "properties": {
         "voop.customScriptsFolderLocation": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "default": null,
-          "description": "Specifies the folder path containing boop style custom scripts."
+          "type": "string",
+          "default": "",
+          "description": "Specifies the folder path containing custom scripts that should be additionally loaded."
         }
       }
     }
