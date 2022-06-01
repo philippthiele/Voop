@@ -156,7 +156,21 @@ function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
 
     response.pipe(writer);
   }
-  https.get(requestOptionsFromUrl(apiDownloadUrl, githubPersonalAccessToken), handleResponse);
+  const req = https.get(requestOptionsFromUrl(apiDownloadUrl, githubPersonalAccessToken), handleResponse);
+  req.on('error', error => {
+    if(error.code && error.code === 'ENOTFOUND'){
+      //try /api/v3 path for enterprise github
+      const apiDownloadUrl = `https://${githubDomain}/api/v3/repos/${ownerAndRepo}/zipball`;
+      const req = https.get(requestOptionsFromUrl(apiDownloadUrl, githubPersonalAccessToken), handleResponse);
+      req.on('error', error => {
+        console.error(`An error occured during request to GitHub for adding custom voop scripts: ${error}`);
+      });
+      req.end();
+    } else {
+      console.error(`An error occured during request to GitHub for adding custom voop scripts: ${error}`);
+    }
+  });
+  req.end();
 }
 
 function loadScripts() {
