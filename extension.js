@@ -5,8 +5,8 @@ const fs = require("fs");
 const path = require("path");
 const https = require("https");
 const yauzl = require("yauzl");
-const { settings } = require("cluster");
 require("module-alias/register");
+const authSettings = require("./AuthSettings");
 let quickPickScriptList = [];
 
 function addScriptsInPath(path) {
@@ -57,21 +57,56 @@ function requestOptionsFromUrl(url, githubPersonalAccessToken) {
   return requestOptions;
 }
 
-function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
+async function downloadRepositoryAsZip(repoUrl) {
   const githubUrlWithoutHttps = repoUrl.substring(repoUrl.indexOf("//") + 2);
   const githubDomain = githubUrlWithoutHttps.substring(0, githubUrlWithoutHttps.indexOf("/"));
   const ownerAndRepo = githubUrlWithoutHttps.substring(githubUrlWithoutHttps.indexOf("/") + 1);
+  const owner = ownerAndRepo.split("/")[0];
+  const repo = ownerAndRepo.split("/")[1];
   const apiDownloadUrl = `https://api.${githubDomain}/repos/${ownerAndRepo}/zipball`;
-  function handleResponse(response) {
-    if (response.statusCode === 302) {
-      return https.get(requestOptionsFromUrl(response.headers.location), handleResponse);
+  async function handleResponse(response) {
+    if (response.statusCode === 401) {
+      vscode.window.showInformationMessage(`Authentication necessary to download Voop custom scripts from '${repoUrl}', please input Personal Access Token.`);
+      const tokenInput = await vscode.window.showInputBox({ placeHolder: `Personal Access Token for '${githubDomain}'.` });
+      if (tokenInput === undefined) {
+        //tokenInput was canceled, stop executing download from GitHub
+        return;
+      }
+      await authSettings.instance.storeAuthData(githubDomain, tokenInput);
+      const authToken = await authSettings.instance.getAuthData(githubDomain);
+      const req = https.get(requestOptionsFromUrl(apiDownloadUrl, authToken), handleResponse);
+      req.on('error', async (error) => {
+        if(error.code && error.code === 'ENOTFOUND'){
+          //try /api/v3 path for enterprise github
+          const apiDownloadUrl = `https://${githubDomain}/api/v3/repos/${ownerAndRepo}/zipball`;
+          const req = https.get(requestOptionsFromUrl(apiDownloadUrl, await authSettings.instance.getAuthData(githubDomain)), handleResponse);
+          req.on('error', error => {
+            console.error(`An error occured during request to GitHub for adding custom voop scripts: ${error}`);
+          });
+          req.end();
+        } else {
+          console.error(`An error occured during request to GitHub for adding custom voop scripts: ${error}`);
+        }
+      });
+      req.end();
+      return;
+    } else if (response.statusCode === 302) {
+      const req = https.get(requestOptionsFromUrl(response.headers.location), handleResponse);
+      req.on('error', async (error) => {
+          console.error(`An error occured during request to GitHub for adding custom voop scripts: ${error}`);
+      });
+      req.end();
+      return;
     } else if(response.statusCode !== 200) {
       console.error(`Voop: Couldn't download custom scripts from repository ${repoUrl}. HTTP status code: ${response.statusCode}`);
       return;
     }
     const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
-    if (!fs.existsSync(`${voopExtDir}/githubScripts`)) {
-      fs.mkdirSync(`${voopExtDir}/githubScripts`);
+    if (!fs.existsSync(`${voopExtDir}/githubCustomScripts`)) {
+      fs.mkdirSync(`${voopExtDir}/githubCustomScripts`);
+    }
+    if (!fs.existsSync(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`)) {
+      fs.mkdirSync(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`);
     }
     response
       .on("error", (e) => {
@@ -91,7 +126,7 @@ function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
       });
 
     const writer = fs
-      .createWriteStream(`${voopExtDir}/githubScripts/customScriptsFromGitHub.zip`)
+      .createWriteStream(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}/customScriptsFromGitHub.zip`)
       .on("finish", () => {
         //3
         // console.log("WRITER FINISH");
@@ -106,23 +141,24 @@ function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
         //4
         // console.log("WRITER CLOSE");
         //delete old scripts after download of new ones
-        fs.readdir(`${voopExtDir}/githubScripts`, (err, files) => {
+        fs.readdir(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`, (err, files) => {
           if (err) {
-            console.log(`An error occured while reading directory ${voopExtDir}/githubScripts: ${err}`);
+            console.log(`An error occured while reading directory ${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}: ${err}`);
             return;
           }
           for (const file of files) {
             if (file != "customScriptsFromGitHub.zip") {
-              fs.unlink(path.join(`${voopExtDir}/githubScripts`, file), (err) => {
+              fs.unlink(path.join(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`, file), (err) => {
                 if (err) {
-                  console.log(`An error occured while deleting file ${voopExtDir}/githubScripts/${file}: ${err}`);
+                  console.log(`An error occured while deleting file ${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}/${file}: ${err}`);
                 }
               });
             }
           }
-          yauzl.open(`${voopExtDir}/githubScripts/customScriptsFromGitHub.zip`, { lazyEntries: true }, function (err, zipfile) {
+          const writePromises = [];
+          yauzl.open(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}/customScriptsFromGitHub.zip`, { lazyEntries: true }, function (err, zipfile) {
             if (err) {
-              console.error(`An error occured while opening zip file ${voopExtDir}/githubScripts/customScriptsFromGitHub.zip: ${err}`);
+              console.error(`An error occured while opening zip file ${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}/customScriptsFromGitHub.zip: ${err}`);
               return;
             }
             zipfile.readEntry();
@@ -138,8 +174,16 @@ function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
                     readStream.on("end", function () {
                       zipfile.readEntry();
                     });
-                    var writeStream = fs.createWriteStream(`${voopExtDir}/githubScripts/${entry.fileName.substring(entry.fileName.lastIndexOf("/") + 1)}`);
+                    var writeStream = fs.createWriteStream(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}/${entry.fileName.substring(entry.fileName.lastIndexOf("/") + 1)}`);
                     readStream.pipe(writeStream);
+                    var promiseResolve, promiseReject;
+                    var writePromise = new Promise(function(resolve){
+                      promiseResolve = resolve;
+                    });
+                    writePromises.push(writePromise);
+                    writeStream.on('finish', () => {
+                      promiseResolve();
+                    });
                   });
                 } else {
                   zipfile.readEntry();
@@ -147,8 +191,10 @@ function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
               }
             });
             zipfile.on("close", function () {
-              addScriptsInPath(`${voopExtDir}/githubScripts`);
-              console.log("Loaded Voop custom scripts from github repository.");
+              Promise.all(writePromises).then(() => {
+                addScriptsInPath(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`);
+                console.log(`Loaded Voop custom scripts from github repository: ${repoUrl}.`);            
+              });
             });
           });
         });
@@ -156,12 +202,12 @@ function downloadRepositoryAsZip(repoUrl, githubPersonalAccessToken) {
 
     response.pipe(writer);
   }
-  const req = https.get(requestOptionsFromUrl(apiDownloadUrl, githubPersonalAccessToken), handleResponse);
-  req.on('error', error => {
+  const req = https.get(requestOptionsFromUrl(apiDownloadUrl, await authSettings.instance.getAuthData(githubDomain)), handleResponse);
+  req.on('error', async (error) => {
     if(error.code && error.code === 'ENOTFOUND'){
       //try /api/v3 path for enterprise github
       const apiDownloadUrl = `https://${githubDomain}/api/v3/repos/${ownerAndRepo}/zipball`;
-      const req = https.get(requestOptionsFromUrl(apiDownloadUrl, githubPersonalAccessToken), handleResponse);
+      const req = https.get(requestOptionsFromUrl(apiDownloadUrl, await authSettings.instance.getAuthData(githubDomain)), handleResponse);
       req.on('error', error => {
         console.error(`An error occured during request to GitHub for adding custom voop scripts: ${error}`);
       });
@@ -181,16 +227,27 @@ function loadScripts() {
   if (settings.customScriptsFolderLocation && settings.customScriptsFolderLocation.trim().length > 0) {
     addScriptsInPath(settings.customScriptsFolderLocation);
   }
-  if (settings.githubCustomScriptRepository && settings.githubCustomScriptRepository.trim().length > 0) {
+  if (settings.githubCustomScriptRepositories && settings.githubCustomScriptRepositories.trim().length > 0) {
     //addScriptsInPath(settings.customScriptsFolderLocation);
-    downloadRepositoryAsZip(settings.githubCustomScriptRepository, settings.githubPersonalAccessToken);
+    const repositories = settings.githubCustomScriptRepositories.split(",");
+    repositories.forEach(repository => {
+      downloadRepositoryAsZip(repository);  
+    });    
   }
 }
+
+// async function test(){
+//   console.log(await authSettings.instance.getAuthData("test"));
+//   await authSettings.instance.storeAuthData("test","verySecretSecret2");
+//   console.log(await authSettings.instance.getAuthData("test"));
+// }
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+  authSettings.init(context);
+  // test();
   loadScripts();
   let disposable = vscode.commands.registerCommand("voop.activate", function () {
     const quickPick = vscode.window.createQuickPick();
@@ -271,8 +328,23 @@ function activate(context) {
     vscode.window.showInformationMessage("Voop Scripts Reloaded");
   });
 
+  let disposable3 = vscode.commands.registerCommand("voop.deleteGithubSecret", async function () {
+    const secretKey = await vscode.window.showInputBox({placeHolder: "Input github domain for which to delete secret, e.g.: github.com"});
+    if (secretKey === undefined) {
+      //userInput was canceled, stop executing script
+      return;
+    }
+    const successful = await authSettings.instance.deleteAuthData(secretKey);
+    if(successful){
+      vscode.window.showInformationMessage(`Secret stored under key '${secretKey}' deleted`);
+    } else {
+      vscode.window.showErrorMessage(`Secret stored under key '${secretKey}' could not be deleted.`);
+    }
+  });
+
   context.subscriptions.push(disposable);
   context.subscriptions.push(disposable2);
+  context.subscriptions.push(disposable3);
 }
 
 function deactivate() {}

@@ -35,6 +35,10 @@
       {
         "command": "voop.reloadScripts",
         "title": "Voop: Reload Scripts"
+      },
+      {
+        "command": "voop.deleteGithubSecret",
+        "title": "Voop: Delete secret for GitHub Domain"
       }
     ],
     "keybindings": [
@@ -51,15 +55,10 @@
           "default": "",
           "description": "Specifies the folder path containing custom scripts that should be additionally loaded."
         },
-        "voop.githubCustomScriptRepository": {
+        "voop.githubCustomScriptRepositories": {
           "type": "string",
           "default": "",
-          "description": "Specifies a repositories GitHub URL containing custom scripts that should be additionally loaded."
-        },
-        "voop.githubPersonalAccessToken": {
-          "type": "string",
-          "default": "",
-          "description": "If your scripts are in a private repo, you need to add a PAT for download. You can generate it in your GitHub profile -> Developer settings, repo access is sufficient."
+          "description": "Specifies repositories GitHub URL containing custom scripts that should be additionally loaded. Can be multiple split by ','. If authentication is required you will be asked to provide a Personal Access Token on first custom script loading from the repository. You can generate it in your GitHub profile -> Developer settings, repo access is sufficient. Authentication is saved & used per github domain (e.g. github.com)."
         }
       }
     }
