@@ -32,7 +32,10 @@ Use `Ctrl+Alt+V` as a quick alias for `Ctrl+Shift+P` + `Voop`.
 
 ## Custom Scripts
 
-You can set the custom scripts folder in your VSCode User Settings (search for voop). For documentation on how to develop custom scripts refer to the original Boop documentation: https://github.com/IvanMathy/Boop/blob/main/Boop/Documentation/CustomScripts.md
+You can set a local custom scripts folder and GitHub repositories as additional source for scripts in your VSCode User Settings (search for voop).  
+![settings](images/voopSettings.png)
+
+For documentation on how to develop custom scripts refer to the original Boop documentation: https://github.com/IvanMathy/Boop/blob/main/Boop/Documentation/CustomScripts.md
 
 In addition to the boop functionality, voop can accept user input after script selection if needed. As an example how to accept it, check the [JoinLines](scripts/JoinLines.js) script.  
 ![Demo](images/demoUserInput.gif)
