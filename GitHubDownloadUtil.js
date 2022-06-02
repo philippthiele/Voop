@@ -142,7 +142,12 @@ module.exports = class GitHubDownloadUtil {
             latestShaOrFalse = await this.checkDownloadNecessary(repoUrl, githubDomain, ownerAndRepo, owner, repo)    
         } catch (error) {
             console.error("Couldn't check whether script download is necessary, authentication missing?");
-            rejectDownload();
+            if(fs.existsSync(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`)){
+                console.info("Target folder already existed, since download of newest scripts failed, loading existing one.")
+                resolveDownload(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`);
+            } else {
+                rejectDownload();
+            }            
             return;
         }        
         if (latestShaOrFalse == false) {
@@ -161,8 +166,8 @@ module.exports = class GitHubDownloadUtil {
                 req.end();
                 return;
             } else if (response.statusCode !== 200) {
-                console.error(`Voop: Couldn't download custom scripts from repository ${repoUrl}. HTTP status code: ${response.statusCode}`);
-                rejectDownload();
+                console.error(`Voop: Couldn't download newest custom scripts from repository ${repoUrl}. Loading old ones. HTTP status code: ${response.statusCode}`);
+                resolveDownload(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`);
                 return;
             }
             response
