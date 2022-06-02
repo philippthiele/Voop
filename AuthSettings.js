@@ -1,5 +1,3 @@
-const { ExtensionContext, SecretStorage } = require("vscode");
-
 let _instance;
 let _secretStorage;
 module.exports = class AuthSettings {
