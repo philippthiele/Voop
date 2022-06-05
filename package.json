@@ -33,6 +33,10 @@
         "title": "Voop"
       },
       {
+        "command": "voop.undo",
+        "title": "Voop: Undo last multifile action (last 5 max)"
+      },
+      {
         "command": "voop.reloadScripts",
         "title": "Voop: Reload Scripts"
       },
@@ -45,8 +49,23 @@
       {
         "command": "voop.activate",
         "key": "Ctrl+Alt+V"
+      },
+      {
+        "command": "voop.undo"
       }
     ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "voop.activate",
+          "group": "8_voop"
+        },
+        {
+          "command": "voop.undo",
+          "group": "8_voop"
+        }
+      ]
+    },
     "configuration": {
       "title": "Voop",
       "properties": {
