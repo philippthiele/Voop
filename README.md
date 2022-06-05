@@ -1,5 +1,5 @@
 # Voop
-Convert, En- & Decode, Format, Tranform, Hash any (selected) text & add own simple JS scripts to extend with any functionality you need
+Convert, En- & Decode, Format, Tranform, Hash any (selected) text or files & add own simple JS scripts to extend with any functionality you need
 ## Featured Functionality List
 These functions are usually executed on the whole document or on the selection if some text is selected.
 
@@ -38,6 +38,8 @@ You can get Voop from the [Visual Studio Code Marketplace](https://marketplace.v
 Press `Ctrl+Shift+P` and enter `Voop`. Execute `Voop` to get a list of available scripts, execute `Voop: Reload Scripts` to update the list of available scripts after adding custom scripts to the custom scripts folder.
 
 Use `Ctrl+Alt+V` as a quick alias for `Ctrl+Shift+P` + `Voop`.
+
+Select multiple files in the VSCode Explorer and right-click (opens context menu) + click `Voop` to execute scripts on multiple files at once. Modifications done via this operation can be turned back by using  `Ctrl+Shift+P` + `Voop: Undo last multifile action (last 5 max)` or also via the context menu.
 
 ## Custom Scripts
 Documentation on how to develop custom scripts: [Custom Script Development](CustomScriptDevelopment.md)
