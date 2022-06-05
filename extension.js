@@ -6,6 +6,7 @@ require("module-alias/register");
 const authSettings = require("./AuthSettings");
 const gitHubDownloadUtil = require("./GitHubDownloadUtil");
 let quickPickScriptList = [];
+const undoStack = [];
 
 function addScriptsInPath(path) {
   let scripts = fs.readdirSync(path);
@@ -18,12 +19,13 @@ function addScriptsInPath(path) {
         const declaration = JSON.parse(scriptContent.substring(scriptContent.indexOf("{"), scriptContent.indexOf("}") + 1).replace(/,\s+}$/, "}"));
         if (!quickPickScriptList.find((s) => s.label === declaration.name)) {
           quickPickScriptList.push({
-            label: `${declaration.name}${declaration.userInput ? " 👤" : ""}`,
+            label: `${declaration.name}${declaration.userInput ? " 👤" : ""}${declaration.multiFile ? " 📚" : ""}`,
             description: declaration.description,
             detail: declaration.tags,
             scriptPath: scriptPath,
             userInput: declaration.userInput,
             userInputPlaceHolder: declaration.userInputPlaceHolder,
+            multiFile: declaration.multiFile
           });
         } else {
           console.debug(`Voop: Script with name '${declaration.name}' exists twice, not adding second instance.`);
@@ -33,6 +35,13 @@ function addScriptsInPath(path) {
       }
     }
   }
+  quickPickScriptList.sort(function(a, b){
+    let x = a.label.toLowerCase();
+    let y = b.label.toLowerCase();
+    if (x < y) {return -1;}
+    if (x > y) {return 1;}
+    return 0;
+  });
 }
 
 
@@ -65,7 +74,7 @@ function activate(context) {
   authSettings.init(context);
   gitHubDownloadUtil.init(authSettings);
   loadScripts();
-  let disposable = vscode.commands.registerCommand("voop.activate", function () {
+  let disposable = vscode.commands.registerCommand("voop.activate", function (clickedFile, allSelectedFiles) {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = quickPickScriptList;
     quickPick.matchOnDescription = true;
@@ -112,28 +121,108 @@ function activate(context) {
           insertion += text;
         },
       };
-      main(inputObj);
 
-      activeEditor.edit((editBuilder) => {
-        if (insertion.length !== 0) {
-          if (selectedText && selectedText.length > 0) {
-            editBuilder.replace(activeEditor.selection, insertion);
+      if(allSelectedFiles !== undefined){
+        //triggered via explorer right click menu item
+        const selectedFiles = [];
+        const ignoredSelections = [];
+        allSelectedFiles.map(file => {
+          const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
+          if(fs.lstatSync(file.fsPath).isFile()){
+            selectedFiles.push({
+              name: fileName,
+              path: file.fsPath, //not to be used by scripts, only for voop write-back purposes
+              text: fs.readFileSync(file.fsPath, "utf8")
+            });
           } else {
-            editBuilder.insert(activeEditor.selection.start, insertion);
+            ignoredSelections.push(fileName);
           }
-        } else if (wholeDocumentText !== inputObj.fullText || !selectedText || selectedText.length === 0) {
-          //fullText modified or no selection, replace whole document
-          const textForReplacement = inputObj.text !== textToEdit ? inputObj.text : inputObj.fullText;
-          editBuilder.replace(
-            new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end),
-            textForReplacement
-          );
+        });
+        inputObj.files = selectedFiles;
+        if(ignoredSelections.length > 0) vscode.window.showWarningMessage(`Voop: Ignoring directories in selection: ${ignoredSelections.join()}.`);
+      }
+
+      if(!inputObj.files && !selectedScript.multiFile){
+        main(inputObj);
+        activeEditor.edit((editBuilder) => {
+          if (insertion.length !== 0) {
+            if (selectedText && selectedText.length > 0) {
+              editBuilder.replace(activeEditor.selection, insertion);
+            } else {
+              editBuilder.insert(activeEditor.selection.start, insertion);
+            }
+          } else if (wholeDocumentText !== inputObj.fullText || !selectedText || selectedText.length === 0) {
+            //fullText modified or no selection, replace whole document
+            const textForReplacement = inputObj.text !== textToEdit ? inputObj.text : inputObj.fullText;
+            editBuilder.replace(
+              new vscode.Range(document.lineAt(0).range.start, document.lineAt(document.lineCount - 1).range.end),
+              textForReplacement
+            );
+          } else {
+            //text is selected, replace selection
+            const textForReplacement = inputObj.text !== textToEdit ? inputObj.text : inputObj.selection;
+            editBuilder.replace(activeEditor.selection, textForReplacement);
+          }
+        });
+      } else if (selectedScript.multiFile){
+        if(inputObj.files && inputObj.files.length > 1){
+          inputObj.text = "";
+          inputObj.fullText = "";
+          inputObj.selection = "";
+          main(inputObj);
+          const newFileText = insertion.length > 0 ? insertion : inputObj.text.length > 0 ? inputObj.text : inputObj.fullText;
+          vscode.workspace.openTextDocument({content: newFileText}).then(document => {
+            vscode.window.showTextDocument(document);
+          });
         } else {
-          //text is selected, replace selection
-          const textForReplacement = inputObj.text !== textToEdit ? inputObj.text : inputObj.selection;
-          editBuilder.replace(activeEditor.selection, textForReplacement);
+          vscode.window.showErrorMessage("Voop: Selected script functions only with multiple files selected via context menu.");
         }
-      });
+      } else {
+        const lastFileState = [];
+        for(const file of inputObj.files) {
+          const originalText = file.text;
+          let insertion = "";
+          let fileInputObj = {
+            text: file.text,
+            selection: "",
+            fullText: file.text,
+            userInput: inputObj.userInput,
+            postInfo: vscode.window.showInformationMessage,
+            postError: vscode.window.showErrorMessage,
+            insert: (text) => {
+              insertion += text;
+            },
+          };
+          main(fileInputObj);
+          if (insertion.length !== 0) {
+            try{
+              fs.appendFileSync(file.path, `\n${insertion}`);
+            } catch(e){
+              vscode.window.showErrorMessage(`Voop: Couldn't append insertions to file: ${file.path}`);
+            }
+          } else if (originalText !== fileInputObj.text || originalText !== fileInputObj.fullText) {
+            //fullText or text modified, replace whole document
+            const textForReplacement = fileInputObj.text !== originalText ? fileInputObj.text : fileInputObj.fullText;
+            try{
+              fs.writeFileSync(file.path, textForReplacement);
+            } catch(e){
+              vscode.window.showErrorMessage(`Voop: Couldn't write changes to file: ${file.path}`);
+            }
+          } else {
+            continue;
+          }
+          lastFileState.push({
+            path: file.path,
+            text: originalText
+          });
+        }
+        if(lastFileState.length > 0){
+          undoStack.push(lastFileState);
+        }
+        if(undoStack.length > 5){
+          undoStack.shift();
+        }
+      }
       quickPick.hide();
     });
     quickPick.show();
@@ -158,9 +247,32 @@ function activate(context) {
     }
   });
 
+  let disposable4 = vscode.commands.registerCommand("voop.undo", async function () {
+    if(undoStack.length === 0){
+      vscode.window.showInformationMessage("Voop: Nothing saved to undo");
+      return;
+    }
+    const lastFileState = undoStack.pop();
+    const backupOfFailedUndos = [];
+    for(const file of lastFileState){
+      try{
+        fs.writeFileSync(file.path, file.text);
+      } catch(e){
+        console.error(`Voop: Couldn't write changes to file: ${file.path}. Error: ${e}`);
+        backupOfFailedUndos.push(file);
+      }
+    }
+    if(backupOfFailedUndos.length > 0){
+      vscode.window.showErrorMessage(`Voop: Couldn't undo changes to files (write failed), putting them back on undo stack: ${backupOfFailedUndos.map(file => file.path).join()}`);
+      undoStack.push(backupOfFailedUndos);
+    }
+    vscode.window.showInformationMessage("Voop: Undo successful");
+  });
+
   context.subscriptions.push(disposable);
   context.subscriptions.push(disposable2);
   context.subscriptions.push(disposable3);
+  context.subscriptions.push(disposable4);
 }
 
 function deactivate() {}
