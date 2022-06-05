@@ -17,8 +17,17 @@ These functions are usually executed on the whole document or on the selection i
 
 ![Demo](images/demo.gif)
 
-## Origins of Voop
+## Origins of Voop & extended functionality
 Voop is a way to execute Boop scripts directly in VSCode. It was created based on the idea and the scripts of [Boop](https://github.com/IvanMathy/Boop), which is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.
+
+Voop can accept user input after script selection if needed. As an example how to accept it, check the [JoinLines](scripts/JoinLines.js) script.  
+![Demo](images/demoUserInput.gif)
+
+Voop scripts can also be executed on multiple files at once using the context menu.
+![Demo](images/demoMultiFileNormalScript.gif)
+
+Also Voop has script native multi-file support to use multiple file contents as an input, where the result will be opened in a new file. An example how this can be used is the [CombineFiles](scripts/CombineFiles.js) script.  
+![Demo](images/demoMultiFile.gif)
 
 ## How to get Voop
 
@@ -37,13 +46,6 @@ You can set a local custom scripts folder and GitHub repositories as additional 
 ![settings](images/voopSettings.png)
 
 An example of a custom script GitHub repository that can be added: https://github.com/philippthiele/voopCustomScripts
-
-In addition to the boop functionality, voop can accept user input after script selection if needed. As an example how to accept it, check the [JoinLines](scripts/JoinLines.js) script.  
-![Demo](images/demoUserInput.gif)
-
-Also Voop has multi-file support, where the script result will be opened in a new file. An example how this can be used is the [CombineFiles](scripts/CombineFiles.js) script.  
-![Demo](images/demoMultiFile.gif)
-
 
 ## Development
 
