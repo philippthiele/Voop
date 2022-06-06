@@ -19,7 +19,7 @@
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=C:\\Users\\Philipp\\.vscode\\extensions\\philippt.voop-0.2.6"
+				"--extensionDevelopmentPath=C:\\Users\\Philipp\\.vscode\\extensions\\philippt.voop-0.2.7"
 			]
 		},
 	]
