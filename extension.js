@@ -7,6 +7,7 @@ const authSettings = require("./AuthSettings");
 const gitHubDownloadUtil = require("./GitHubDownloadUtil");
 let quickPickScriptList = [];
 const undoStack = [];
+const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
 
 function addScriptsInPath(path) {
   let scripts = fs.readdirSync(path);
@@ -74,6 +75,7 @@ function activate(context) {
   authSettings.init(context);
   gitHubDownloadUtil.init(authSettings);
   loadScripts();
+
   let disposable = vscode.commands.registerCommand("voop.activate", function (clickedFile, allSelectedFiles) {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = quickPickScriptList;
@@ -269,10 +271,35 @@ function activate(context) {
     vscode.window.showInformationMessage("Voop: Undo successful");
   });
 
+  let disposable5 = vscode.commands.registerCommand("voop.startDebugging", function(clickedFile, allSelectedFiles) {
+    let workSpaceFolder = undefined;
+    if(vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0){
+      workSpaceFolder = { uri: vscode.workspace.workspaceFolders[0].uri };
+    } else if(vscode.window.activeTextEditor && vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri){
+      workSpaceFolder = { uri: vscode.window.activeTextEditor.document.uri };
+    }
+    if(vscode.env.VOOP_DEBUG === "true"){
+      vscode.window.showInformationMessage("Voop: Debug session already started");
+      return;
+    }
+    vscode.debug.startDebugging(workSpaceFolder, {
+      name: "voop",
+      type: "extensionHost",
+      request: "launch",
+      "args": [
+				`--extensionDevelopmentPath=${voopExtDir}`,
+			],
+      "env": {
+        "VOOP_DEBUG": "true"
+      }
+    });
+  });
+
   context.subscriptions.push(disposable);
   context.subscriptions.push(disposable2);
   context.subscriptions.push(disposable3);
   context.subscriptions.push(disposable4);
+  context.subscriptions.push(disposable5);
 }
 
 function deactivate() {}
