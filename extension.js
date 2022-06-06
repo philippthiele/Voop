@@ -7,6 +7,7 @@ const authSettings = require("./AuthSettings");
 const gitHubDownloadUtil = require("./GitHubDownloadUtil");
 let quickPickScriptList = [];
 const undoStack = [];
+const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
 
 function addScriptsInPath(path) {
   let scripts = fs.readdirSync(path);
@@ -25,7 +26,7 @@ function addScriptsInPath(path) {
             scriptPath: scriptPath,
             userInput: declaration.userInput,
             userInputPlaceHolder: declaration.userInputPlaceHolder,
-            multiFile: declaration.multiFile
+            multiFile: declaration.multiFile,
           });
         } else {
           console.debug(`Voop: Script with name '${declaration.name}' exists twice, not adding second instance.`);
@@ -35,15 +36,18 @@ function addScriptsInPath(path) {
       }
     }
   }
-  quickPickScriptList.sort(function(a, b){
+  quickPickScriptList.sort(function (a, b) {
     let x = a.label.toLowerCase();
     let y = b.label.toLowerCase();
-    if (x < y) {return -1;}
-    if (x > y) {return 1;}
+    if (x < y) {
+      return -1;
+    }
+    if (x > y) {
+      return 1;
+    }
     return 0;
   });
 }
-
 
 async function loadScripts() {
   quickPickScriptList = [];
@@ -74,6 +78,13 @@ function activate(context) {
   authSettings.init(context);
   gitHubDownloadUtil.init(authSettings);
   loadScripts();
+
+  if (process.env.VOOP_DEBUG_WORKSPACE) {
+    vscode.workspace.updateWorkspaceFolders(0, 0, {
+      uri: vscode.Uri.file(process.env.VOOP_DEBUG_WORKSPACE),
+    });
+  }
+
   let disposable = vscode.commands.registerCommand("voop.activate", function (clickedFile, allSelectedFiles) {
     const quickPick = vscode.window.createQuickPick();
     quickPick.items = quickPickScriptList;
@@ -107,9 +118,17 @@ function activate(context) {
         return;
       }
 
-      const script = fs.readFileSync(selectedScript.scriptPath, "utf8");
-      let insertion = "";
+      let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
+      if (process.env.VOOP_DEBUG === "true") {
+        const declarationPart = script.substring(0, script.indexOf("**/") + 3);
+        const functionPart = script.substring(script.indexOf("**/") + 3);
+        const functionStart = functionPart.substring(0, functionPart.indexOf("{") + 1);
+        const functionBody = functionPart.substring(functionPart.indexOf("{") + 1);
+        script = declarationPart + functionStart + "\ndebugger;" + functionBody;
+      }
       eval(script);
+
+      let insertion = "";
       let inputObj = {
         text: textToEdit,
         selection: selectedText,
@@ -122,27 +141,27 @@ function activate(context) {
         },
       };
 
-      if(allSelectedFiles !== undefined){
+      if (allSelectedFiles !== undefined) {
         //triggered via explorer right click menu item
         const selectedFiles = [];
         const ignoredSelections = [];
-        allSelectedFiles.map(file => {
+        allSelectedFiles.map((file) => {
           const fileName = file.path.substring(file.path.lastIndexOf("/") + 1);
-          if(fs.lstatSync(file.fsPath).isFile()){
+          if (fs.lstatSync(file.fsPath).isFile()) {
             selectedFiles.push({
               name: fileName,
               path: file.fsPath, //not to be used by scripts, only for voop write-back purposes
-              text: fs.readFileSync(file.fsPath, "utf8")
+              text: fs.readFileSync(file.fsPath, "utf8"),
             });
           } else {
             ignoredSelections.push(fileName);
           }
         });
         inputObj.files = selectedFiles;
-        if(ignoredSelections.length > 0) vscode.window.showWarningMessage(`Voop: Ignoring directories in selection: ${ignoredSelections.join()}.`);
+        if (ignoredSelections.length > 0) vscode.window.showWarningMessage(`Voop: Ignoring directories in selection: ${ignoredSelections.join()}.`);
       }
 
-      if(!inputObj.files && !selectedScript.multiFile){
+      if (!inputObj.files && !selectedScript.multiFile) {
         main(inputObj);
         activeEditor.edit((editBuilder) => {
           if (insertion.length !== 0) {
@@ -164,14 +183,14 @@ function activate(context) {
             editBuilder.replace(activeEditor.selection, textForReplacement);
           }
         });
-      } else if (selectedScript.multiFile){
-        if(inputObj.files && inputObj.files.length > 1){
+      } else if (selectedScript.multiFile) {
+        if (inputObj.files && inputObj.files.length > 1) {
           inputObj.text = "";
           inputObj.fullText = "";
           inputObj.selection = "";
           main(inputObj);
           const newFileText = insertion.length > 0 ? insertion : inputObj.text.length > 0 ? inputObj.text : inputObj.fullText;
-          vscode.workspace.openTextDocument({content: newFileText}).then(document => {
+          vscode.workspace.openTextDocument({ content: newFileText }).then((document) => {
             vscode.window.showTextDocument(document);
           });
         } else {
@@ -179,7 +198,7 @@ function activate(context) {
         }
       } else {
         const lastFileState = [];
-        for(const file of inputObj.files) {
+        for (const file of inputObj.files) {
           const originalText = file.text;
           let insertion = "";
           let fileInputObj = {
@@ -195,17 +214,17 @@ function activate(context) {
           };
           main(fileInputObj);
           if (insertion.length !== 0) {
-            try{
+            try {
               fs.appendFileSync(file.path, `\n${insertion}`);
-            } catch(e){
+            } catch (e) {
               vscode.window.showErrorMessage(`Voop: Couldn't append insertions to file: ${file.path}`);
             }
           } else if (originalText !== fileInputObj.text || originalText !== fileInputObj.fullText) {
             //fullText or text modified, replace whole document
             const textForReplacement = fileInputObj.text !== originalText ? fileInputObj.text : fileInputObj.fullText;
-            try{
+            try {
               fs.writeFileSync(file.path, textForReplacement);
-            } catch(e){
+            } catch (e) {
               vscode.window.showErrorMessage(`Voop: Couldn't write changes to file: ${file.path}`);
             }
           } else {
@@ -213,13 +232,13 @@ function activate(context) {
           }
           lastFileState.push({
             path: file.path,
-            text: originalText
+            text: originalText,
           });
         }
-        if(lastFileState.length > 0){
+        if (lastFileState.length > 0) {
           undoStack.push(lastFileState);
         }
-        if(undoStack.length > 5){
+        if (undoStack.length > 5) {
           undoStack.shift();
         }
       }
@@ -234,13 +253,13 @@ function activate(context) {
   });
 
   let disposable3 = vscode.commands.registerCommand("voop.deleteGithubSecret", async function () {
-    const secretKey = await vscode.window.showInputBox({placeHolder: "Input github domain for which to delete secret, e.g.: github.com"});
+    const secretKey = await vscode.window.showInputBox({ placeHolder: "Input github domain for which to delete secret, e.g.: github.com" });
     if (secretKey === undefined) {
       //userInput was canceled, stop executing script
       return;
     }
     const successful = await authSettings.instance.deleteAuthData(secretKey);
-    if(successful){
+    if (successful) {
       vscode.window.showInformationMessage(`Secret stored under key '${secretKey}' deleted`);
     } else {
       vscode.window.showErrorMessage(`Secret stored under key '${secretKey}' could not be deleted.`);
@@ -248,31 +267,65 @@ function activate(context) {
   });
 
   let disposable4 = vscode.commands.registerCommand("voop.undo", async function () {
-    if(undoStack.length === 0){
+    if (undoStack.length === 0) {
       vscode.window.showInformationMessage("Voop: Nothing saved to undo");
       return;
     }
     const lastFileState = undoStack.pop();
     const backupOfFailedUndos = [];
-    for(const file of lastFileState){
-      try{
+    for (const file of lastFileState) {
+      try {
         fs.writeFileSync(file.path, file.text);
-      } catch(e){
+      } catch (e) {
         console.error(`Voop: Couldn't write changes to file: ${file.path}. Error: ${e}`);
         backupOfFailedUndos.push(file);
       }
     }
-    if(backupOfFailedUndos.length > 0){
-      vscode.window.showErrorMessage(`Voop: Couldn't undo changes to files (write failed), putting them back on undo stack: ${backupOfFailedUndos.map(file => file.path).join()}`);
+    if (backupOfFailedUndos.length > 0) {
+      vscode.window.showErrorMessage(
+        `Voop: Couldn't undo changes to files (write failed), putting them back on undo stack: ${backupOfFailedUndos.map((file) => file.path).join()}`
+      );
       undoStack.push(backupOfFailedUndos);
     }
     vscode.window.showInformationMessage("Voop: Undo successful");
+  });
+
+  let disposable5 = vscode.commands.registerCommand("voop.startDebugging", function (clickedFile, allSelectedFiles) {
+    let fileToOpen = "";
+    let folderToOpen = undefined;
+    const env = {
+      VOOP_DEBUG: "true"
+    }
+    if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      folderToOpen =  vscode.workspace.workspaceFolders[0].uri.fsPath + "/";
+      folderToOpen = folderToOpen.replace(/\\/g, "/");
+      env.VOOP_DEBUG_WORKSPACE = folderToOpen;
+    }
+    if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document && vscode.window.activeTextEditor.document.uri) {
+      fileToOpen = vscode.window.activeTextEditor.document.uri.fsPath;
+      fileToOpen = fileToOpen.replace(/\\/g, "/");
+    }
+    if (process.env.VOOP_DEBUG === "true") {
+      vscode.window.showInformationMessage("Voop: Debug session already started");
+      return;
+    }
+    vscode.debug.startDebugging(undefined, {
+      name: "voop",
+      type: "extensionHost",
+      request: "launch",
+      args: [
+        fileToOpen,
+        `--extensionDevelopmentPath=${voopExtDir}`
+      ],
+      env: env
+    });
   });
 
   context.subscriptions.push(disposable);
   context.subscriptions.push(disposable2);
   context.subscriptions.push(disposable3);
   context.subscriptions.push(disposable4);
+  context.subscriptions.push(disposable5);
 }
 
 function deactivate() {}
