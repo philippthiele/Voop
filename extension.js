@@ -8,6 +8,7 @@ const gitHubDownloadUtil = require("./GitHubDownloadUtil");
 let quickPickScriptList = [];
 const undoStack = [];
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
+let importedScripts = {};
 
 function addScriptsInPath(path) {
   let scripts = fs.readdirSync(path);
@@ -18,8 +19,9 @@ function addScriptsInPath(path) {
       const scriptContent = fs.readFileSync(scriptPath, "utf8");
       try {
         const declaration = JSON.parse(scriptContent.substring(scriptContent.indexOf("{"), scriptContent.indexOf("}") + 1).replace(/,\s+}$/, "}"));
-        if (!quickPickScriptList.find((s) => s.label === declaration.name)) {
+        if (!quickPickScriptList.find((s) => s.scriptName === declaration.name)) {
           quickPickScriptList.push({
+            scriptName: declaration.name,
             label: `${declaration.name}${declaration.userInput ? " 👤" : ""}${declaration.multiFile ? " 📚" : ""}`,
             description: declaration.description,
             detail: declaration.tags,
@@ -71,6 +73,13 @@ async function loadScripts() {
   }
 }
 
+function requireFromString(src, filename) {
+  var Module = module.constructor;
+  var m = new Module();
+  m._compile(src, filename);
+  return m.exports;
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -118,15 +127,11 @@ function activate(context) {
         return;
       }
 
-      let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
-      if (process.env.VOOP_DEBUG === "true") {
-        const declarationPart = script.substring(0, script.indexOf("**/") + 3);
-        const functionPart = script.substring(script.indexOf("**/") + 3);
-        const functionStart = functionPart.substring(0, functionPart.indexOf("{") + 1);
-        const functionBody = functionPart.substring(functionPart.indexOf("{") + 1);
-        script = declarationPart + functionStart + "\ndebugger;" + functionBody;
+      if (!importedScripts[selectedScript.scriptName] || process.env.VOOP_DEBUG === "true") { //when debug always re-read the script, because there could be changes
+        let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
+        const voopScript = requireFromString(script + '\n\nfunction debug(input) {\n\tdebugger;\n\tmain(input);\n}\n\nmodule.exports = { "main": main, "debug": debug }', selectedScript.scriptPath.substring(selectedScript.scriptPath.lastIndexOf("/") + 1));
+        importedScripts[selectedScript.scriptName] = voopScript;
       }
-      eval(script);
 
       let insertion = "";
       let inputObj = {
@@ -162,7 +167,12 @@ function activate(context) {
       }
 
       if (!inputObj.files && !selectedScript.multiFile) {
-        main(inputObj);
+        if (process.env.VOOP_DEBUG === "true") {
+          importedScripts[selectedScript.scriptName].debug(inputObj);
+        }
+        else {
+          importedScripts[selectedScript.scriptName].main(inputObj);
+        }
         activeEditor.edit((editBuilder) => {
           if (insertion.length !== 0) {
             if (selectedText && selectedText.length > 0) {
@@ -188,7 +198,12 @@ function activate(context) {
           inputObj.text = "";
           inputObj.fullText = "";
           inputObj.selection = "";
-          main(inputObj);
+          if (process.env.VOOP_DEBUG === "true") {
+            importedScripts[selectedScript.scriptName].debug(inputObj);
+          }
+          else {
+            importedScripts[selectedScript.scriptName].main(inputObj);
+          }
           const newFileText = insertion.length > 0 ? insertion : inputObj.text.length > 0 ? inputObj.text : inputObj.fullText;
           vscode.workspace.openTextDocument({ content: newFileText }).then((document) => {
             vscode.window.showTextDocument(document);
@@ -212,7 +227,12 @@ function activate(context) {
               insertion += text;
             },
           };
-          main(fileInputObj);
+          if (process.env.VOOP_DEBUG === "true") {
+            importedScripts[selectedScript.scriptName].debug(fileInputObj);
+          }
+          else {
+            importedScripts[selectedScript.scriptName].main(fileInputObj);
+          }
           if (insertion.length !== 0) {
             try {
               fs.appendFileSync(file.path, `\n${insertion}`);
@@ -248,6 +268,7 @@ function activate(context) {
   });
 
   let disposable2 = vscode.commands.registerCommand("voop.reloadScripts", function () {
+    importedScripts = [];
     loadScripts();
     vscode.window.showInformationMessage("Voop Scripts Reloaded");
   });
@@ -297,7 +318,7 @@ function activate(context) {
       VOOP_DEBUG: "true"
     }
     if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-      folderToOpen =  vscode.workspace.workspaceFolders[0].uri.fsPath + "/";
+      folderToOpen = vscode.workspace.workspaceFolders[0].uri.fsPath + "/";
       folderToOpen = folderToOpen.replace(/\\/g, "/");
       env.VOOP_DEBUG_WORKSPACE = folderToOpen;
     }
@@ -328,7 +349,7 @@ function activate(context) {
   context.subscriptions.push(disposable5);
 }
 
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
   activate,
