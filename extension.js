@@ -9,6 +9,7 @@ let quickPickScriptList = [];
 const undoStack = [];
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
 let importedScripts = {};
+const requireFromString = require('require-from-memory').requireFromString;
 
 function addScriptsInPath(path) {
   let scripts = fs.readdirSync(path);
@@ -71,13 +72,6 @@ async function loadScripts() {
       }
     }
   }
-}
-
-function requireFromString(src, filename) {
-  var Module = module.constructor;
-  var m = new Module();
-  m._compile(src, filename);
-  return m.exports;
 }
 
 /**
