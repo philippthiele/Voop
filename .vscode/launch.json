@@ -15,11 +15,22 @@
 			]
 		},
 		{
+			"name": "Run Extension with Voop Debug",
+			"type": "extensionHost",
+			"request": "launch",
+			"args": [
+				"--extensionDevelopmentPath=${workspaceFolder}"
+			],
+			"env": {
+				"VOOP_DEBUG": "true"
+			}
+		},
+		{
 			"name": "Extension Other Folder",
 			"type": "extensionHost",
 			"request": "launch",
 			"args": [
-				"--extensionDevelopmentPath=C:\\Users\\Philipp\\.vscode\\extensions\\philippt.voop-0.2.6"
+				"--extensionDevelopmentPath=C:\\Users\\Philipp\\.vscode\\extensions\\philippt.voop-0.2.7"
 			]
 		},
 	]

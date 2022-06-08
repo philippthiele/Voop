@@ -1,5 +1,17 @@
 # Custom Scripts
 
+- [Custom Scripts](#custom-scripts)
+	- [Setup](#setup)
+	- [Writing Custom Scripts](#writing-custom-scripts)
+		- [Meta info](#meta-info)
+		- [The Main Function](#the-main-function)
+		- [Script Execution](#script-execution)
+		- [Properties](#properties)
+		- [Functions](#functions)
+			- [Editing](#editing)
+			- [Messaging](#messaging)
+		- [Debugging](#debugging)
+
 ## Setup
 
 To use custom scripts, you need to tell Voop where to find them.  
@@ -118,3 +130,11 @@ input.postInfo(`${ lines.length } lines removed`)
 input.postError("Invalid XML")
 
 ```
+
+### Debugging
+
+If you write a more complex script you probably want/need to debug it at some point. Maybe you even want to debug some existing scripts to understand how the script development works better. Voop leverages the VSCode debugger to make scripts debuggable.
+
+To start a debugging session, just execute (`Ctrl+Shift+P`) the `Voop: Start Debugging Session` command. This will open your currently open file and/or workspace VSCode window and attach the debugger to it. When you now execute any Voop script in, including your custom ones, it will be enriched with a debug entry point where it will always stop so you can debug through your script. Since Voop loads the scripts on-the-fly and does not require it to them be full JavaScript modules, setting breakpoints in the script will not work, but you can add additional `debugger;` statements in your script as in the debugging entrypoint, if you need to stop at a specific line more often.
+
+https://user-images.githubusercontent.com/1737722/172684348-2ae6dc94-e02f-4bc9-bbda-4fb95d31c413.mp4
