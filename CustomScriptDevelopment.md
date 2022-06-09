@@ -20,6 +20,7 @@ You can set a local custom scripts folder and GitHub repositories as additional 
 
 An example of a custom script GitHub repository that can be added: https://github.com/philippthiele/voopCustomScripts
 
+You can directly open your custom script folder in the current VSCode Workspace by executing (`Ctrl+Shift+P`) - `Voop: Open Custom Script Folder`
 
 ## Writing Custom Scripts
 
