@@ -5,6 +5,7 @@ const fs = require("fs");
 require("module-alias/register");
 const authSettings = require("./AuthSettings");
 const gitHubDownloadUtil = require("./GitHubDownloadUtil");
+const utils = require("./Utils");
 let quickPickScriptList = [];
 const undoStack = [];
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
@@ -330,10 +331,37 @@ function activate(context) {
       request: "launch",
       args: [
         fileToOpen,
-        `--extensionDevelopmentPath=${voopExtDir}`
+        `--extensionDevelopmentPath=${voopExtDir}`,
+        "--disable-extensions"
       ],
       env: env
     });
+
+  });
+
+  let disposable6 = vscode.commands.registerCommand("voop.openCustomScriptFolder", async function () {
+    const settings = vscode.workspace.getConfiguration("voop");
+    if(process.env.VOOP_DEBUG === "true"){
+      vscode.window.showWarningMessage(`Can't open custom script folder in debugging session because of VSCode issue: https://github.com/microsoft/vscode/issues/78740`);
+      return;
+    }
+    if (!settings.customScriptsFolderLocation || settings.customScriptsFolderLocation.trim().length === 0) {
+      vscode.window.showInformationMessage(`Can't open custom script folder since none is defined in Voop Settings.`);
+      return;
+    }
+    if(vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.some(folder => utils.pathEqual(folder.uri.fsPath, settings.customScriptsFolderLocation))){
+      vscode.window.showInformationMessage(`Custom script folder already open in current workspace.`);
+      return;
+    }
+    const indexToAddInWorkspace = !vscode.workspace.workspaceFolders ? 0 : vscode.workspace.workspaceFolders.length;
+    const successful = await vscode.workspace.updateWorkspaceFolders(indexToAddInWorkspace, 0, {
+      uri: vscode.Uri.file(settings.customScriptsFolderLocation),
+    });
+    if (successful) {
+      vscode.window.showInformationMessage(`Successfully opened custom script folder in current workspace.`);
+    } else {
+      vscode.window.showErrorMessage(`Failed to open '${settings.customScriptsFolderLocation}' in current workspace.`);
+    }
   });
 
   context.subscriptions.push(disposable);
@@ -341,6 +369,7 @@ function activate(context) {
   context.subscriptions.push(disposable3);
   context.subscriptions.push(disposable4);
   context.subscriptions.push(disposable5);
+  context.subscriptions.push(disposable6);
 }
 
 function deactivate() { }
