@@ -65,6 +65,7 @@ module.exports = class Utils {
               description: declaration.description,
               detail: declaration.tags,
               scriptPath: scriptPath,
+              scriptFileName: scriptPath.substring(scriptPath.lastIndexOf("/") + 1),
               userInput: declaration.userInput,
               userInputPlaceHolder: declaration.userInputPlaceHolder,
               multiFile: declaration.multiFile,

@@ -2,7 +2,7 @@
   "name": "voop",
   "displayName": "Voop",
   "description": "Convert, En- & Decode, Format, Tranform, Hash any (selected) text or files & add own simple JS scripts to extend with any functionality you need",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "icon": "images/logo.png",
   "repository": "https://github.com/philippthiele/Voop",
   "publisher": "PhilippT",
@@ -27,6 +27,7 @@
     "onCommand:voop.reloadScripts",
     "onCommand:voop.startDebugging",
     "onCommand:voop.openCustomScriptFolder",
+    "onCommand:voop.addKeyBinding",
     "onCommand:voop.deleteGithubSecret",
     "onStartupFinished"
   ],
@@ -56,6 +57,10 @@
       {
         "command": "voop.openCustomScriptFolder",
         "title": "Voop: Open Custom Script Folder"
+      },
+      {
+        "command": "voop.addKeyBinding",
+        "title": "Voop: Add Key Binding to execute a Script directly"
       },
       {
         "command": "voop.deleteGithubSecret",
