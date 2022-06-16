@@ -26,12 +26,8 @@ async function activate(context) {
     });
   }
 
-  const voopActivate = function (allSelectedFiles, resultInNewFile) {
-    const quickPick = vscode.window.createQuickPick();
-    quickPick.items = quickPickScriptList;
-    quickPick.matchOnDescription = true;
-    quickPick.matchOnDetail = true;
-    quickPick.onDidChangeSelection(async (selectedScripts) => {
+  const voopActivate = function (allSelectedFiles, resultInNewFile, scriptToExecute) {
+    const triggerSelectedScript = async (selectedScripts) => {
       // the user canceled the selection
       if (!selectedScripts || selectedScripts.length === 0) {
         return;
@@ -64,7 +60,7 @@ async function activate(context) {
         let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
         const voopScript = requireFromString(
           script + '\n\nfunction debug(input) {\n\tdebugger;\n\tmain(input);\n}\n\nmodule.exports = { "main": main, "debug": debug }',
-          selectedScript.scriptPath.substring(selectedScript.scriptPath.lastIndexOf("/") + 1)
+          selectedScript.scriptFileName
         );
         importedScripts[selectedScript.scriptName] = voopScript;
       }
@@ -207,17 +203,50 @@ async function activate(context) {
           undoStack.shift();
         }
       }
-      quickPick.hide();
-    });
+      if (quickPick) {
+        quickPick.hide();
+      }
+    };
+    let quickPick;
+    if (scriptToExecute) {
+      const foundScripts = quickPickScriptList.filter((script) => script.scriptFileName === scriptToExecute);
+      if (foundScripts.length > 0) {
+        triggerSelectedScript(foundScripts);
+      } else {
+        vscode.window.showErrorMessage(`Voop: Script ${scriptToExecute} not found.`);
+      }
+      return;
+    }
+    quickPick = vscode.window.createQuickPick();
+    quickPick.items = quickPickScriptList;
+    quickPick.matchOnDescription = true;
+    quickPick.matchOnDetail = true;
+    quickPick.onDidChangeSelection(triggerSelectedScript);
     quickPick.show();
   };
 
-  let activateDisposable = vscode.commands.registerCommand("voop.activate", function (clickedFile, allSelectedFiles) {
-    voopActivate(allSelectedFiles, false);
+  let activateDisposable = vscode.commands.registerCommand("voop.activate", function (clickedFileOrScriptAsArg, allSelectedFiles) {
+    if (
+      clickedFileOrScriptAsArg &&
+      (typeof clickedFileOrScriptAsArg === "string" || clickedFileOrScriptAsArg instanceof String) &&
+      clickedFileOrScriptAsArg.endsWith(".js")
+    ) {
+      voopActivate(allSelectedFiles, false, clickedFileOrScriptAsArg);
+    } else {
+      voopActivate(allSelectedFiles, false);
+    }
   });
 
-  let activateNewFileDisposable = vscode.commands.registerCommand("voop.activateNewFile", function (clickedFile, allSelectedFiles) {
-    voopActivate(allSelectedFiles, true);
+  let activateNewFileDisposable = vscode.commands.registerCommand("voop.activateNewFile", function (clickedFileOrScriptAsArg, allSelectedFiles) {
+    if (
+      clickedFileOrScriptAsArg &&
+      (typeof clickedFileOrScriptAsArg === "string" || clickedFileOrScriptAsArg instanceof String) &&
+      clickedFileOrScriptAsArg.endsWith(".js")
+    ) {
+      voopActivate(allSelectedFiles, true, clickedFileOrScriptAsArg);
+    } else {
+      voopActivate(allSelectedFiles, true);
+    }
   });
 
   let reloadScriptsDisposable = vscode.commands.registerCommand("voop.reloadScripts", async function () {
@@ -322,6 +351,46 @@ async function activate(context) {
     }
   });
 
+  let addKeyBindingDisposable = vscode.commands.registerCommand("voop.addKeyBinding", function (clickedFile, allSelectedFiles) {
+    const quickPick = vscode.window.createQuickPick();
+    quickPick.items = quickPickScriptList;
+    quickPick.matchOnDescription = true;
+    quickPick.matchOnDetail = true;
+    quickPick.onDidChangeSelection(async (selectedScripts) => {
+      if (!selectedScripts || selectedScripts.length === 0) {
+        // the user canceled the selection
+        return;
+      }
+      const selectedScript = selectedScripts[0];
+      const modifyOpenFileText = "Modify open File (default)";
+      const openInNewFileText = "Open Transformation Result in new File";
+      const transformationMode = await vscode.window.showQuickPick([modifyOpenFileText, openInNewFileText]);
+      if (!transformationMode || transformationMode.length === 0) {
+        // the user canceled the selection
+        return;
+      }
+      const command = transformationMode === openInNewFileText ? "voop.activateNewFile" : "voop.activate";
+      const instructions = `{
+    "command": "${command}",
+    "args": "${selectedScript.scriptFileName}",
+    "when": "${selectedScript.scriptName} || editorTextFocus"
+}
+
+1. Copy above key binding
+2. Open your keybindings.json by using Ctrl+Shift+P (Command+Shift+P on Mac) and executing "Preferences: Open Keyboard Shortcuts (JSON)"
+3. Add the copied key binding to the keybindings array & save to create a new command that can be bound to a key combination
+4. Open the Keyboard Shortcuts editor by executing "Preferences: Open Keyboard Shortcuts"
+5. Search for "${selectedScript.scriptName}" (script name will be shown under "When" expression column)
+6. Click on the line of the previously created command and press ENTER to bind it to a key combination
+`;
+      vscode.workspace.openTextDocument({ content: instructions }).then((document) => {
+        vscode.window.showTextDocument(document);
+      });
+      quickPick.hide();
+    });
+    quickPick.show();
+  });
+
   context.subscriptions.push(activateDisposable);
   context.subscriptions.push(activateNewFileDisposable);
   context.subscriptions.push(reloadScriptsDisposable);
@@ -329,6 +398,7 @@ async function activate(context) {
   context.subscriptions.push(undoDisposable);
   context.subscriptions.push(startDebuggingDisposable);
   context.subscriptions.push(openCustomScriptFolderDisposable);
+  context.subscriptions.push(addKeyBindingDisposable);
 }
 
 function deactivate() {}

@@ -33,6 +33,8 @@ Use `Ctrl+Alt+N` as a quick alias for `Ctrl+Shift+P` + `Voop: Transformation Res
 
 Select multiple files in the VSCode Explorer and right-click (opens context menu) + click `Voop` to execute scripts on multiple files at once. Modifications done via this operation can be turned back by using  `Ctrl+Shift+P` + `Voop: Undo last multifile action (last 5 max)` or also via the context menu.
 
+You can add keyboard shortcuts to execute scripts directly, `Voop` guides you on how to it with the command `Voop: Add Key Binding to execute a Script directly`.
+
 ## Origins of Voop & extended functionality
 Voop is a way to execute Boop scripts directly in VSCode. It was created based on the idea and the scripts of [Boop](https://github.com/IvanMathy/Boop), which is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.
 

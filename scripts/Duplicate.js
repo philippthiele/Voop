@@ -9,8 +9,11 @@
 **/
 
 function main(input) {
-    if(!input.resultInNewFile){
+    if(!input.resultInNewFile && input.selection){
 		input.insert(input.text);
+		input.insert("\n");
+	}
+	if(!input.selection && !input.resultInNewFile) {
 		input.insert("\n");
 	}
 	input.insert(input.text);
