@@ -48,6 +48,7 @@ Each script starts with a declarative JSON document, describing the contents of 
 * `tags` are used during script selection to filter the results.
 * `userInput` whether user input is accepted after script selection. As an example how to accept it, check the [JoinLines](scripts/JoinLines.js) script. User Input Demo Gif: 
 ![Demo](images/demoUserInput.gif)
+* `resultInNewFile` whether transformation result was requested by the user to be opened in a new file. As an example how it can be used, check the [Duplicate](scripts/Duplicate.js) script.
 * `multiFile` whether a script works with multiple files. If it does, script execution is only done when a user selects multiple via the context menu and executes `Voop` from there. Transformations done by the script are opened in a new file. An example is the [CombineFiles](scripts/CombineFiles.js) script. Multi File Demo Gif: 
 ![Demo](images/demoMultiFile.gif)
 

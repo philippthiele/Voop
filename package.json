@@ -1,8 +1,8 @@
 {
   "name": "voop",
   "displayName": "Voop",
-  "description": "Convert, En- & Decode, Format, Tranform, Hash any (selected) text & add own simple JS scripts to extend with any functionality you need",
-  "version": "0.3.0",
+  "description": "Convert, En- & Decode, Format, Tranform, Hash any (selected) text or files & add own simple JS scripts to extend with any functionality you need",
+  "version": "0.3.1",
   "icon": "images/logo.png",
   "repository": "https://github.com/philippthiele/Voop",
   "publisher": "PhilippT",
@@ -22,6 +22,7 @@
   ],
   "activationEvents": [
     "onCommand:voop.activate",
+    "onCommand:voop.activateNewFile",
     "onCommand:voop.undo",
     "onCommand:voop.reloadScripts",
     "onCommand:voop.startDebugging",
@@ -37,8 +38,12 @@
         "title": "Voop"
       },
       {
+        "command": "voop.activateNewFile",
+        "title": "Voop: Transformation Result in new File"
+      },
+      {
         "command": "voop.undo",
-        "title": "Voop: Undo last multifile action (last 5 max)"
+        "title": "Voop: Undo last Multifile Action (last 5 max)"
       },
       {
         "command": "voop.reloadScripts",
@@ -61,6 +66,10 @@
       {
         "command": "voop.activate",
         "key": "Ctrl+Alt+V"
+      },
+      {
+        "command": "voop.activateNewFile",
+        "key": "Ctrl+Alt+N"
       },
       {
         "command": "voop.undo"
