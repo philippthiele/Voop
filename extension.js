@@ -12,76 +12,13 @@ const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath
 let importedScripts = {};
 const requireFromString = require('require-from-memory').requireFromString;
 
-function addScriptsInPath(path) {
-  let scripts = fs.readdirSync(path);
-  for (let i = 0; i < scripts.length; i++) {
-    const item = scripts[i];
-    if (item.endsWith(".js")) {
-      const scriptPath = (path + "/" + item).replace(/\\/g, "/");
-      const scriptContent = fs.readFileSync(scriptPath, "utf8");
-      try {
-        const declaration = JSON.parse(scriptContent.substring(scriptContent.indexOf("{"), scriptContent.indexOf("}") + 1).replace(/,\s+}$/, "}"));
-        if (!quickPickScriptList.find((s) => s.scriptName === declaration.name)) {
-          quickPickScriptList.push({
-            scriptName: declaration.name,
-            label: `${declaration.name}${declaration.userInput ? " 👤" : ""}${declaration.multiFile ? " 📚" : ""}`,
-            description: declaration.description,
-            detail: declaration.tags,
-            scriptPath: scriptPath,
-            userInput: declaration.userInput,
-            userInputPlaceHolder: declaration.userInputPlaceHolder,
-            multiFile: declaration.multiFile,
-          });
-        } else {
-          console.debug(`Voop: Script with name '${declaration.name}' exists twice, not adding second instance.`);
-        }
-      } catch (e) {
-        console.error(`Voop: Couldn't load script ${item}`, e);
-      }
-    }
-  }
-  quickPickScriptList.sort(function (a, b) {
-    let x = a.label.toLowerCase();
-    let y = b.label.toLowerCase();
-    if (x < y) {
-      return -1;
-    }
-    if (x > y) {
-      return 1;
-    }
-    return 0;
-  });
-}
-
-async function loadScripts() {
-  quickPickScriptList = [];
-  addScriptsInPath(__dirname + "/scripts");
-  addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts");
-  const settings = vscode.workspace.getConfiguration("voop");
-  if (settings.customScriptsFolderLocation && settings.customScriptsFolderLocation.trim().length > 0) {
-    addScriptsInPath(settings.customScriptsFolderLocation);
-  }
-  if (settings.githubCustomScriptRepositories && settings.githubCustomScriptRepositories.trim().length > 0) {
-    const repositories = settings.githubCustomScriptRepositories.split(",");
-    for (let i = 0; i < repositories.length; i++) {
-      const repository = repositories[i];
-      try {
-        const downloadPath = await gitHubDownloadUtil.downloadRepositoryAsZip(repository);
-        addScriptsInPath(downloadPath);
-      } catch (error) {
-        vscode.window.showErrorMessage(`Voop: Couldn't download custom scripts from repository: ${repository}`);
-      }
-    }
-  }
-}
-
 /**
  * @param {vscode.ExtensionContext} context
  */
-function activate(context) {
+ async function activate(context) {
   authSettings.init(context);
   gitHubDownloadUtil.init(authSettings);
-  loadScripts();
+  quickPickScriptList = await utils.loadScripts(quickPickScriptList, gitHubDownloadUtil);
 
   if (process.env.VOOP_DEBUG_WORKSPACE) {
     vscode.workspace.updateWorkspaceFolders(0, 0, {
@@ -264,7 +201,7 @@ function activate(context) {
 
   let disposable2 = vscode.commands.registerCommand("voop.reloadScripts", function () {
     importedScripts = [];
-    loadScripts();
+    utils.loadScripts(quickPickScriptList, gitHubDownloadUtil);
     vscode.window.showInformationMessage("Voop Scripts Reloaded");
   });
 
