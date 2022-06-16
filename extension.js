@@ -199,9 +199,9 @@ const requireFromString = require('require-from-memory').requireFromString;
     quickPick.show();
   });
 
-  let disposable2 = vscode.commands.registerCommand("voop.reloadScripts", function () {
+  let disposable2 = vscode.commands.registerCommand("voop.reloadScripts", async function () {
     importedScripts = [];
-    utils.loadScripts(quickPickScriptList, gitHubDownloadUtil);
+    quickPickScriptList = await utils.loadScripts(quickPickScriptList, gitHubDownloadUtil);
     vscode.window.showInformationMessage("Voop Scripts Reloaded");
   });
 
