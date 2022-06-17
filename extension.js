@@ -97,9 +97,9 @@ async function activate(context) {
       if (!inputObj.files && !selectedScript.multiFile) {
         //standard non-multiFile script executed on selected text/whole document
         if (process.env.VOOP_DEBUG === "true") {
-          voopScript.debug(inputObj);
+          await voopScript.debug(inputObj);
         } else {
-          voopScript.main(inputObj);
+          await voopScript.main(inputObj);
         }
         if (resultInNewFile) {
           const newFileText = insertion.length > 0 ? insertion : inputObj.text !== textToEdit ? inputObj.text : inputObj.fullText;
@@ -136,9 +136,9 @@ async function activate(context) {
           inputObj.selection = "";
           inputObj.resultInNewFile = true;
           if (process.env.VOOP_DEBUG === "true") {
-            voopScript.debug(inputObj);
+            await voopScript.debug(inputObj);
           } else {
-            voopScript.main(inputObj);
+            await voopScript.main(inputObj);
           }
           const newFileText = insertion.length > 0 ? insertion : inputObj.text.length > 0 ? inputObj.text : inputObj.fullText;
           vscode.workspace.openTextDocument({ content: newFileText }).then((document) => {
@@ -165,9 +165,9 @@ async function activate(context) {
             },
           };
           if (process.env.VOOP_DEBUG === "true") {
-            voopScript.debug(fileInputObj);
+            await voopScript.debug(fileInputObj);
           } else {
-            voopScript.main(fileInputObj);
+            await voopScript.main(fileInputObj);
           }
           if (insertion.length !== 0) {
             try {
