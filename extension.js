@@ -9,7 +9,6 @@ const utils = require("./Utils");
 let quickPickScriptList = [];
 const undoStack = [];
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
-let importedScripts = {};
 const requireFromString = require("require-from-memory").requireFromString;
 
 /**
@@ -55,15 +54,11 @@ async function activate(context) {
         return;
       }
 
-      if (!importedScripts[selectedScript.scriptName] || process.env.VOOP_DEBUG === "true") {
-        //when debug always re-read the script, because there could be changes
-        let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
-        const voopScript = requireFromString(
-          script + '\n\nfunction debug(input) {\n\tdebugger;\n\tmain(input);\n}\n\nmodule.exports = { "main": main, "debug": debug }',
-          selectedScript.scriptFileName
-        );
-        importedScripts[selectedScript.scriptName] = voopScript;
-      }
+      let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
+      const voopScript = requireFromString(
+        script + '\n\nfunction debug(input) {\n\tdebugger;\n\tmain(input);\n}\n\nmodule.exports = { "main": main, "debug": debug }',
+        selectedScript.scriptFileName
+      );
 
       let insertion = "";
       let inputObj = {
@@ -102,9 +97,9 @@ async function activate(context) {
       if (!inputObj.files && !selectedScript.multiFile) {
         //standard non-multiFile script executed on selected text/whole document
         if (process.env.VOOP_DEBUG === "true") {
-          importedScripts[selectedScript.scriptName].debug(inputObj);
+          voopScript.debug(inputObj);
         } else {
-          importedScripts[selectedScript.scriptName].main(inputObj);
+          voopScript.main(inputObj);
         }
         if (resultInNewFile) {
           const newFileText = insertion.length > 0 ? insertion : inputObj.text !== textToEdit ? inputObj.text : inputObj.fullText;
@@ -141,9 +136,9 @@ async function activate(context) {
           inputObj.selection = "";
           inputObj.resultInNewFile = true;
           if (process.env.VOOP_DEBUG === "true") {
-            importedScripts[selectedScript.scriptName].debug(inputObj);
+            voopScript.debug(inputObj);
           } else {
-            importedScripts[selectedScript.scriptName].main(inputObj);
+            voopScript.main(inputObj);
           }
           const newFileText = insertion.length > 0 ? insertion : inputObj.text.length > 0 ? inputObj.text : inputObj.fullText;
           vscode.workspace.openTextDocument({ content: newFileText }).then((document) => {
@@ -170,9 +165,9 @@ async function activate(context) {
             },
           };
           if (process.env.VOOP_DEBUG === "true") {
-            importedScripts[selectedScript.scriptName].debug(fileInputObj);
+            voopScript.debug(fileInputObj);
           } else {
-            importedScripts[selectedScript.scriptName].main(fileInputObj);
+            voopScript.main(fileInputObj);
           }
           if (insertion.length !== 0) {
             try {
@@ -250,7 +245,6 @@ async function activate(context) {
   });
 
   let reloadScriptsDisposable = vscode.commands.registerCommand("voop.reloadScripts", async function () {
-    importedScripts = [];
     quickPickScriptList = await utils.loadScripts(quickPickScriptList, gitHubDownloadUtil);
     vscode.window.showInformationMessage("Voop Scripts Reloaded");
   });
