@@ -3,23 +3,35 @@
   "api":1,
   "name":"Convert to pretty markdown table",
   "description":"Converts csv, tsv or markdown table into pretty markdown table format.",
-  "author":"xshoji",
+  "author":"xshoji + philippthiele",
   "icon":"term",
   "tags":"csv,tsv,md,markdown"
 }
 **/
 function main(input) {
-  input.text = convertToPrettyMarkdownTableFormat(input.text);
+  input.text = convertToPrettyMarkdownTableFormat(input.text, input.postInfo);
 }
 
-function convertToPrettyMarkdownTableFormat(input) {
-  const list = input.trim().replace(/^(\r?\n)+$/g, "\n").split("\n").map(v => v.replace(/^\||\|$/g, ""));
+function convertToPrettyMarkdownTableFormat(text, postInfo) {
+  text = text.replace(/\r\n|\r|\n/g, "\n");
+  const list = text.trim().replace(/^(\r?\n)+$/g, "\n").split("\n").map(v => v.replace(/^\||\|$/g, ""));
   const delimiter = [`|`, `\t`, `","`, `,`].find(v => list[0].split(v).length > 1);
   if (delimiter === `|`) {
     // If input text is markdown table format, removes header separator.
     list.splice(1, 1);
   }
   const tableElements = list.map(record => record.split(delimiter).map(v => v.trim()));
+  const maxNumColums = Math.max(...tableElements.map(e => e.length));
+  let hadToAddColumns = false;
+  for (const row of tableElements) {
+    for (let i = row.length; i < maxNumColums; i++) {
+      row.push(""); //add empty column if row is missing columns
+      hadToAddColumns = true;
+    }
+  }
+  if (hadToAddColumns) {
+    postInfo("Had to add some empty columns to rows that had not enough columns.")
+  }
   const calcBytes = (character) => {
     let length = 0;
     for (let i = 0; i < character.length; i++) {

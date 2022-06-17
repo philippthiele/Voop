@@ -28,8 +28,6 @@ module.exports = class Utils {
 
   static async loadScripts(quickPickScriptList, gitHubDownloadUtil) {
     quickPickScriptList = [];
-    quickPickScriptList = this.addScriptsInPath(__dirname + "/scripts", quickPickScriptList);
-    quickPickScriptList = this.addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts", quickPickScriptList);
     const settings = vscode.workspace.getConfiguration("voop");
     if (settings.customScriptsFolderLocation && settings.customScriptsFolderLocation.trim().length > 0) {
       quickPickScriptList = this.addScriptsInPath(settings.customScriptsFolderLocation, quickPickScriptList);
@@ -46,6 +44,8 @@ module.exports = class Utils {
         }
       }
     }
+    quickPickScriptList = this.addScriptsInPath(__dirname + "/scripts", quickPickScriptList);
+    quickPickScriptList = this.addScriptsInPath(__dirname + "/Boop/Boop/Boop/scripts", quickPickScriptList);
     return quickPickScriptList;
   }
 
