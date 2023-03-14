@@ -214,7 +214,7 @@ module.exports = class GitHubDownloadUtil {
                                 return;
                             }
                             for (const file of files) {
-                                if (file != "customScriptsFromGitHub.zip") {
+                                if (file != "customScriptsFromGitHub.zip" && file != "node_modules") {
                                     fs.unlink(path.join(`${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}`, file), (err) => {
                                         if (err) {
                                             console.log(`An error occured while deleting file ${voopExtDir}/githubCustomScripts/${githubDomain}-${owner}-${repo}/${file}: ${err}`);
@@ -236,7 +236,7 @@ module.exports = class GitHubDownloadUtil {
                                         zipfile.readEntry();
                                     } else {
                                         // file entry
-                                        if (entry.fileName.endsWith(".js")) {
+                                        if (entry.fileName.endsWith(".js") || entry.fileName.endsWith(".json")) {
                                             zipfile.openReadStream(entry, function (err, readStream) {
                                                 if (err) throw err;
                                                 readStream.on("end", function () {

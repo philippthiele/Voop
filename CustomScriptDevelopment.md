@@ -10,6 +10,8 @@
 		- [Functions](#functions)
 			- [Editing](#editing)
 			- [Messaging](#messaging)
+		- [Usage of node modules](#usage-of-node-modules)
+		- [Usage of Promises for async operations](#usage-of-promises-for-async-operations)
 		- [Debugging](#debugging)
 
 ## Setup
@@ -132,6 +134,19 @@ input.postInfo(`${ lines.length } lines removed`)
 input.postError("Invalid XML")
 
 ```
+
+### Usage of node modules
+Although you are encouraged to use vanilla JS, to keep the scripts small and to easier share the scripts with others without a `npm install` being necessary, it is possible to use modules. For that, go into the folder with your custom scripts and install the module you want to import. For example [Axios](https://github.com/axios/axios) by executing `npm install axios`. This will create a package.json and package-lock.json defining the dependency and also create a node_modules folder with the actual installation. 
+
+Afterwards, you will be able to import modules and use them in your scripts. For example: https://github.com/philippthiele/voopCustomScripts/blob/main/HttpRequestDemoAxios.js
+
+When using this in a [custom script GitHub repository](https://github.com/philippthiele/Voop#custom-scripts), make sure to commit the package.json and optionally the package-lock.json ([recommended](https://docs.npmjs.com/cli/v9/configuring-npm/package-lock-json)). Also add a .gitignore that ignores the node_modules folder. When this repo is cloned for the first time or there are changes to the node_modules, another `npm install` in the folder will be necessary to install/update the modules in the node_modules folder. This will also be necessary, when Voop is updated. Workaround would be to commit the node_modules by omitting the .gitignore, which is highly discouraged, but might be fine when using only very few and small modules as dependencies.
+
+### Usage of Promises for async operations
+If a promise is returned by your main function, it will be waited for until resolved. This enables you to execute async operations like http requests. Here is one example using vanilla JS:  
+https://github.com/philippthiele/voopCustomScripts/blob/main/HttpRequestDemoVanillaJS.js  
+And here is another example using the node module [Axios](https://github.com/axios/axios):  
+https://github.com/philippthiele/voopCustomScripts/blob/main/HttpRequestDemoAxios.js  
 
 ### Debugging
 
