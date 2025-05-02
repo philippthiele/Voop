@@ -56,7 +56,7 @@ async function activate(context) {
 
       let script = fs.readFileSync(selectedScript.scriptPath, "utf8");
       const voopScript = requireFromString(
-        script + '\n\nfunction debug(input) {\n\tdebugger;\n\tmain(input);\n}\n\nmodule.exports = { "main": main, "debug": debug }',
+        'module.paths.push(__dirname);\n\n' + script + '\n\nfunction debug(input) {\n\tdebugger;\n\tmain(input);\n}\n\nmodule.exports = { "main": main, "debug": debug }',
         selectedScript.scriptPath
       );
 
