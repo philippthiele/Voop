@@ -7,7 +7,7 @@
   "repository": "https://github.com/philippthiele/Voop",
   "publisher": "PhilippT",
   "engines": {
-    "vscode": "^1.66.0"
+    "vscode": "^1.90.0"
   },
   "categories": [
     "Formatters",
@@ -21,14 +21,6 @@
     "format"
   ],
   "activationEvents": [
-    "onCommand:voop.activate",
-    "onCommand:voop.activateNewFile",
-    "onCommand:voop.undo",
-    "onCommand:voop.reloadScripts",
-    "onCommand:voop.startDebugging",
-    "onCommand:voop.openCustomScriptFolder",
-    "onCommand:voop.addKeyBinding",
-    "onCommand:voop.deleteGithubSecret",
     "onStartupFinished"
   ],
   "main": "./extension.js",
