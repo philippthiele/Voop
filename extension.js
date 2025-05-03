@@ -11,6 +11,19 @@ const undoStack = [];
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
 const requireFromString = require("require-from-memory").requireFromString;
 
+let recentScripts = [];
+
+function updateRecentScripts(scriptName) {
+  const index = recentScripts.indexOf(scriptName);
+  if (index !== -1) {
+    recentScripts.splice(index, 1);
+  }
+  recentScripts.unshift(scriptName);
+  if (recentScripts.length > 10) {
+    recentScripts.pop();
+  }
+}
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -32,6 +45,8 @@ async function activate(context) {
         return;
       }
       const selectedScript = selectedScripts[0];
+
+      updateRecentScripts(selectedScript.scriptName);
 
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) {
@@ -213,7 +228,10 @@ async function activate(context) {
       return;
     }
     quickPick = vscode.window.createQuickPick();
-    quickPick.items = quickPickScriptList;
+    quickPick.items = quickPickScriptList.map(script => ({
+      ...script,
+      sortOrder: recentScripts.indexOf(script.scriptName) !== -1 ? recentScripts.indexOf(script.scriptName) : Infinity
+    })).sort((a, b) => a.sortOrder - b.sortOrder);
     quickPick.matchOnDescription = true;
     quickPick.matchOnDetail = true;
     quickPick.onDidChangeSelection(triggerSelectedScript);
