@@ -37,6 +37,7 @@ async function activate(context) {
 
       // Add the selected script to recent scripts
       await recentScripts.addToRecentScripts(selectedScript.scriptName);
+      quickPickScriptList = recentScripts.sortScriptsByRecentUsage(quickPickScriptList);
 
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) {
