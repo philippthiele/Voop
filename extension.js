@@ -9,6 +9,7 @@ const utils = require("./Utils");
 const recentScripts = require("./RecentScripts");
 let quickPickScriptList = [];
 const undoStack = [];
+let lastExecutedScript = null; // Store the last executed script
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
 const requireFromString = require("require-from-memory").requireFromString;
 
@@ -34,6 +35,13 @@ async function activate(context) {
         return;
       }
       const selectedScript = selectedScripts[0];
+
+      // Store the last executed script for later use
+      lastExecutedScript = {
+        script: selectedScript,
+        allSelectedFiles: allSelectedFiles,
+        resultInNewFile: resultInNewFile
+      };
 
       // Add the selected script to recent scripts
       await recentScripts.addToRecentScripts(selectedScript.scriptName);
@@ -391,6 +399,16 @@ async function activate(context) {
     quickPick.show();
   });
 
+  let executeLastScriptDisposable = vscode.commands.registerCommand("voop.executeLastScript", function () {
+    if (!lastExecutedScript) {
+      vscode.window.showInformationMessage("No previous Voop script was executed in this session");
+      return;
+    }
+    
+    // Re-execute the last script with the same parameters
+    voopActivate(lastExecutedScript.allSelectedFiles, lastExecutedScript.resultInNewFile, lastExecutedScript.script.scriptFileName);
+  });
+
   context.subscriptions.push(activateDisposable);
   context.subscriptions.push(activateNewFileDisposable);
   context.subscriptions.push(reloadScriptsDisposable);
@@ -399,6 +417,7 @@ async function activate(context) {
   context.subscriptions.push(startDebuggingDisposable);
   context.subscriptions.push(openCustomScriptFolderDisposable);
   context.subscriptions.push(addKeyBindingDisposable);
+  context.subscriptions.push(executeLastScriptDisposable);
 }
 
 function deactivate() {}

@@ -55,6 +55,10 @@
         "title": "Voop: Add Key Binding to execute a Script directly"
       },
       {
+        "command": "voop.executeLastScript",
+        "title": "Voop: Execute Last Used Script"
+      },
+      {
         "command": "voop.deleteGithubSecret",
         "title": "Voop: Delete secret for GitHub Domain"
       }
@@ -67,6 +71,10 @@
       {
         "command": "voop.activateNewFile",
         "key": "Ctrl+Alt+N"
+      },
+      {
+        "command": "voop.executeLastScript",
+        "key": "Ctrl+Alt+L"
       },
       {
         "command": "voop.undo"
