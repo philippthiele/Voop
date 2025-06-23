@@ -12,6 +12,7 @@ These functions are usually executed on the whole document or on the selection i
 - Transform text to upper/lower, camel, kebab, snake, start, sponge case, trim
 - Sort / Shuffle lines
 - Duplicate to current or new file
+- Re-execute your last used script with a single keyboard shortcut (Ctrl+Alt+L)
 - Add your own JS scripts to provide any functionality you'd like
 - and more ...
 
@@ -30,10 +31,16 @@ If you want to open the transformation result in a new file instead, press `Ctrl
 
 Use `Ctrl+Alt+V` as a quick alias for `Ctrl+Shift+P` + `Voop`.  
 Use `Ctrl+Alt+N` as a quick alias for `Ctrl+Shift+P` + `Voop: Transformation Result in new File`.  
+Use `Ctrl+Alt+L` to quickly re-execute the last script you used (great for repetitive tasks!).
 
 Select multiple files in the VSCode Explorer and right-click (opens context menu) + click `Voop` to execute scripts on multiple files at once. Modifications done via this operation can be turned back by using  `Ctrl+Shift+P` + `Voop: Undo last multifile action (last 5 max)` or also via the context menu.
 
 You can add keyboard shortcuts to execute scripts directly, `Voop` guides you on how to it with the command `Voop: Add Key Binding to execute a Script directly`.
+
+For quick access, Voop provides the following keyboard shortcuts by default:
+- `Ctrl+Alt+V` - Open the Voop script selection menu
+- `Ctrl+Alt+N` - Open the Voop script selection menu with results going to a new file
+- `Ctrl+Alt+L` - Re-execute the last used Voop script
 
 By default, scripts are sorted by most recently used in the quick pick menu, making it easier to access frequently used scripts. You can disable this behavior and revert to alphabetical sorting in the VSCode settings under `voop.sortByMostRecentlyUsed`.
 
