@@ -35,6 +35,8 @@ Select multiple files in the VSCode Explorer and right-click (opens context menu
 
 You can add keyboard shortcuts to execute scripts directly, `Voop` guides you on how to it with the command `Voop: Add Key Binding to execute a Script directly`.
 
+By default, scripts are sorted by most recently used in the quick pick menu, making it easier to access frequently used scripts. You can disable this behavior and revert to alphabetical sorting in the VSCode settings under `voop.sortByMostRecentlyUsed`.
+
 ## Origins of Voop & extended functionality
 Voop is a way to execute Boop scripts directly in VSCode. It was created based on the idea and the scripts of [Boop](https://github.com/IvanMathy/Boop), which is a scriptable scratchpad that allows you to run any transformations on your text using the built-in or your self-written .js scripts.
 

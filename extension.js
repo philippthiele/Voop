@@ -6,6 +6,7 @@ require("module-alias/register");
 const authSettings = require("./AuthSettings");
 const gitHubDownloadUtil = require("./GitHubDownloadUtil");
 const utils = require("./Utils");
+const recentScripts = require("./RecentScripts");
 let quickPickScriptList = [];
 const undoStack = [];
 const voopExtDir = vscode.extensions.getExtension("PhilippT.voop").extensionPath;
@@ -17,6 +18,7 @@ const requireFromString = require("require-from-memory").requireFromString;
 async function activate(context) {
   authSettings.init(context);
   gitHubDownloadUtil.init(authSettings);
+  recentScripts.init(context);
   quickPickScriptList = await utils.loadScripts(quickPickScriptList, gitHubDownloadUtil);
 
   if (process.env.VOOP_DEBUG_WORKSPACE) {
@@ -32,6 +34,9 @@ async function activate(context) {
         return;
       }
       const selectedScript = selectedScripts[0];
+
+      // Add the selected script to recent scripts
+      await recentScripts.addToRecentScripts(selectedScript.scriptName);
 
       const activeEditor = vscode.window.activeTextEditor;
       if (!activeEditor) {

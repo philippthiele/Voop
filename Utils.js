@@ -1,5 +1,6 @@
 const fs = require("fs");
 const vscode = require("vscode");
+const recentScripts = require("./RecentScripts");
 
 module.exports = class Utils {
   static pathEqual(actual, expected) {
@@ -77,18 +78,8 @@ module.exports = class Utils {
           console.error(`Voop: Couldn't load script ${item}`, e);
         }
       }
-    }
-    quickPickScriptList.sort(function (a, b) {
-      let x = a.label.toLowerCase();
-      let y = b.label.toLowerCase();
-      if (x < y) {
-        return -1;
-      }
-      if (x > y) {
-        return 1;
-      }
-      return 0;
-    });
+    }    // Sort scripts by most recently used or alphabetically based on settings
+    quickPickScriptList = recentScripts.sortScriptsByRecentUsage(quickPickScriptList);
     return quickPickScriptList;
   }
 };
