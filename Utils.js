@@ -31,7 +31,12 @@ module.exports = class Utils {
     quickPickScriptList = [];
     const settings = vscode.workspace.getConfiguration("voop");
     if (settings.customScriptsFolderLocation && settings.customScriptsFolderLocation.trim().length > 0) {
-      quickPickScriptList = this.addScriptsInPath(settings.customScriptsFolderLocation, quickPickScriptList);
+      const customPath = settings.customScriptsFolderLocation;
+      if (fs.existsSync(customPath)) {
+        quickPickScriptList = this.addScriptsInPath(customPath, quickPickScriptList);
+      } else {
+        vscode.window.showWarningMessage(`Voop: Custom scripts folder not found: '${customPath}'. Please check your 'voop.customScriptsFolderLocation' setting.`);
+      }
     }
     if (settings.githubCustomScriptRepositories && settings.githubCustomScriptRepositories.trim().length > 0) {
       const repositories = settings.githubCustomScriptRepositories.split(",");
