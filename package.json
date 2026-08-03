@@ -2,7 +2,7 @@
   "name": "voop",
   "displayName": "Voop",
   "description": "Convert, En- & Decode, Format, Tranform, Hash any (selected) text or files & add own simple JS scripts to extend with any functionality you need",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "icon": "images/logo.png",
   "repository": "https://github.com/philippthiele/Voop",
   "publisher": "PhilippT",
@@ -67,15 +67,18 @@
     "keybindings": [
       {
         "command": "voop.activate",
-        "key": "Ctrl+Alt+V"
+        "key": "Ctrl+Alt+V",
+        "mac": "Ctrl+Cmd+V"
       },
       {
         "command": "voop.activateNewFile",
-        "key": "Ctrl+Alt+N"
+        "key": "Ctrl+Alt+N",
+        "mac": "Ctrl+Cmd+N"
       },
       {
         "command": "voop.executeLastScript",
-        "key": "Ctrl+Alt+L"
+        "key": "Ctrl+Alt+L",
+        "mac": "Ctrl+Cmd+L"
       },
       {
         "command": "voop.undo"

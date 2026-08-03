@@ -12,7 +12,7 @@ These functions are usually executed on the whole document or on the selection i
 - Transform text to upper/lower, camel, kebab, snake, start, sponge case, trim
 - Sort / Shuffle lines
 - Duplicate to current or new file
-- Re-execute your last used script with a single keyboard shortcut (Ctrl+Alt+L)
+- Re-execute your last used script with a single keyboard shortcut (`Ctrl+Alt+L` on Windows/Linux, `Ctrl+Cmd+L` on macOS)
 - Add your own JS scripts to provide any functionality you'd like
 - and more ...
 
@@ -29,18 +29,18 @@ Press `Ctrl+Shift+P` and enter `Voop`. Execute `Voop` to get a list of available
 
 If you want to open the transformation result in a new file instead, press `Ctrl+Shift+P` and execute `Voop: Transformation Result in new File`.
 
-Use `Ctrl+Alt+V` as a quick alias for `Ctrl+Shift+P` + `Voop`.  
-Use `Ctrl+Alt+N` as a quick alias for `Ctrl+Shift+P` + `Voop: Transformation Result in new File`.  
-Use `Ctrl+Alt+L` to quickly re-execute the last script you used (great for repetitive tasks!).
+Use `Ctrl+Alt+V` (Windows/Linux) or `Ctrl+Cmd+V` (macOS) as a quick alias for `Ctrl+Shift+P` + `Voop`.  
+Use `Ctrl+Alt+N` (Windows/Linux) or `Ctrl+Cmd+N` (macOS) as a quick alias for `Ctrl+Shift+P` + `Voop: Transformation Result in new File`.  
+Use `Ctrl+Alt+L` (Windows/Linux) or `Ctrl+Cmd+L` (macOS) to quickly re-execute the last script you used (great for repetitive tasks!).
 
 Select multiple files in the VSCode Explorer and right-click (opens context menu) + click `Voop` to execute scripts on multiple files at once. Modifications done via this operation can be turned back by using  `Ctrl+Shift+P` + `Voop: Undo last multifile action (last 5 max)` or also via the context menu.
 
 You can add keyboard shortcuts to execute scripts directly, `Voop` guides you on how to it with the command `Voop: Add Key Binding to execute a Script directly`.
 
 For quick access, Voop provides the following keyboard shortcuts by default:
-- `Ctrl+Alt+V` - Open the Voop script selection menu
-- `Ctrl+Alt+N` - Open the Voop script selection menu with results going to a new file
-- `Ctrl+Alt+L` - Re-execute the last used Voop script
+- `Ctrl+Alt+V` (Windows/Linux) / `Ctrl+Cmd+V` (macOS) - Open the Voop script selection menu
+- `Ctrl+Alt+N` (Windows/Linux) / `Ctrl+Cmd+N` (macOS) - Open the Voop script selection menu with results going to a new file
+- `Ctrl+Alt+L` (Windows/Linux) / `Ctrl+Cmd+L` (macOS) - Re-execute the last used Voop script
 
 By default, scripts are sorted by most recently used in the quick pick menu, making it easier to access frequently used scripts. You can disable this behavior and revert to alphabetical sorting in the VSCode settings under `voop.sortByMostRecentlyUsed`.
 
