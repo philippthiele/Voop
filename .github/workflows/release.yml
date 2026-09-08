@@ -18,6 +18,7 @@ jobs:
           node-version: 24
       - name: Package
         run: npm i -g vsce && npm install && vsce package
-      - run: vsce publish -p ${{secrets.VSCE}}
+      - name: Publish
+        run: vsce publish --pat "$VSCE_PAT"
         env:
-          VSCE: ${{secrets.VSCE}}
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
